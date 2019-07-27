@@ -2,6 +2,7 @@
     Contains the script for generating icons-->
 <!DOCTYPE html>
 	<head>
+
 		<meta charset="UTF-8">
     	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">    <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
@@ -12,6 +13,9 @@
 		<!-- Material icons -->
 		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
+		<!-- Popper JS -->
+		<script type="text/javascript" src="popper.js"></script>
+
 		<!-- Bootstrap 4 -->
     	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
@@ -19,6 +23,16 @@
     	<!-- Custom CSS -->
 		<link rel="stylesheet" href="nat.css">
 	</head>
+
+	<script type="text/javascript">
+		// Enabling tooltips in document
+		$(document).ready(function(){
+		  $('[data-toggle="tooltip"]').tooltip();
+		  $('image').tooltip({
+		  	'container' : 'body'
+		  });
+		});
+	</script>
 
 	<body>
 
@@ -104,7 +118,22 @@
 
 	<script type="text/javascript">
 
-		var pathIndex = new Array([]);
+		// Array storing all objects (along with ids)
+		shapes = [];
+		// Array representing connection characteristics between objects
+		connections = [];
+		// Array to store all elements tagged "image"
+		images = [];
+		// Array to store all IP adresses
+		ips = [];
+		// Global mapping of connection by IP address
+		ipConnectionMap = {};
+		// Global mapping of connections and corresponding path strings
+		ipConnPathMap = {};
+		// Array to store all keys to path mapping
+		ipConnPathMapKey = [];
+
+		// Variables to store split path string
 		var curveStart,curveEnd,X,Y;
 
 		// Custom method on canvas to add a connection between two objects
@@ -169,11 +198,16 @@
 			    y3 = [0, 0, 0, 0, y1 + dy, y1 - dy, y4, y4][res[1]].toFixed(3);
 		    
 			var path = ["M", x1.toFixed(3), y1.toFixed(3), "C", x2, y2, x3, y3, x4.toFixed(3), y4.toFixed(3)].join(",");
-			pathIndex[0][0] = path;
+
+			// Store mapping of connection IP addresses to path string
+			ipConnPathMap[ipConnPathMapKey[ipConnPathMapKey.length - 1]] = path;
+			
 			curveStart=path.slice(0,16); //gets the starting point of the curve
 			curveEnd = path.slice(18); //gets the ending point of the curve
 			X=path.slice(2,9);
 			Y=path.slice(10,16);
+
+			console.log(ipConnPathMap);
 
 			if (line && line.line) 
 			{
@@ -193,12 +227,8 @@
 			}
 		};
 
-		var el;
-		shapes = [];
-		connections = [];
+		// Create canvas
 		var paper = Raphael("canvas", (window.innerWidth* 8/12), window.innerHeight);
-		var ipmap = {};
-		var globalIndex = {};
 
 		// Moving and dragging the images
 		function movement(shapes){
@@ -231,20 +261,24 @@
 		function addEdge()
 		{
 			indexes = [];
-			var $imgs = shapes;
-			// console.log($imgs);
-			var $imgs = $("image").click(function () 
+			local_shapes = shapes;
+			local_shapes = $("image").click(function () 
 			{
-	    		// console.log('indexof', $imgs.index(this))
-	    		indexes.push($imgs.index(this));
-	    		globalIndex[indexes[0]]=indexes[1];
+	    		indexes.push(local_shapes.index(this));
+	    			// check two objects are clicked
 	    			if(indexes.length == 2)
 	    			{
-	    				// console.log("Indexes",indexes);
-	    				drawLine(shapes, indexes);
+	    				// create path mapping key
+	    				key = local_shapes[indexes[0]].getAttribute("id") + " " + local_shapes[indexes[1]].getAttribute("id");
+	    				ipConnPathMapKey.push(key);
+	    				
+	    				// create connection mapping by IP addresses
+	    				ipConnectionMap[local_shapes[indexes[0]].getAttribute("id")] = local_shapes[indexes[1]].getAttribute("id");
+	    				drawLine();
 	    				$("image").unbind('click');
 	    			}
 			})
+			console.log(ipConnectionMap);
 		}
 
 		// Draw edges on the canvas
@@ -256,26 +290,51 @@
 		// Add computers
 		function addComputer() 
 		{ 
-			var comp = paper.image("laptop.png",150,120,30,30);
-			shapes.push(comp);
-			movement(shapes);
-
+			// Get IP address
 			var ip = document.getElementsByClassName("computerIP")[0].value;
-			ipmap[ip] = comp;
-			console.log(ipmap);
+			
+			if(validateIPAddress(ip) && checkExistingIP(ip))
+			{	
+				// Create SVG
+				var comp = paper.image("laptop.png",150,120,30,30);
+				
+				//add IP as id to SVG image
+				images = document.getElementsByTagName("image");
+				images[images.length - 1].setAttribute("id", "C" + ip);
+
+				// add tooltip
+				images[images.length - 1].setAttribute("data-toggle", "tooltip");
+				images[images.length - 1].setAttribute("title", "C" + ip);
+
+				ips.push(ip);
+				shapes.push(comp);
+				movement(shapes);
+			}
 		}
 
 		// Add routers
 		function addRouter() 
 		{ 
-			var router = paper.image("router.png",170,110,30,30);
-			shapes.push(router);
-			// console.log(shapes);
-			movement(shapes);
-
+			// Get IP address
 			var ip = document.getElementsByClassName("routerIP")[0].value;
-			ipmap[ip] = router;
-			console.log(ipmap);
+			
+			if(validateIPAddress(ip) && checkExistingIP(ip))
+			{
+				// Create SVG
+				var router = paper.image("router.png",150,150,30,30);
+
+				//add IP as id to SVG image
+				images = document.getElementsByTagName("image");
+				images[images.length - 1].setAttribute("id", "R" + ip);
+
+				// add tooltip
+				images[images.length - 1].setAttribute("data-toggle", "tooltip");
+				images[images.length - 1].setAttribute("title", "R" + ip);
+
+				ips.push(ip);
+				shapes.push(router);
+				movement(shapes);
+			}
 		}
 
 		// Clear canvas
@@ -286,6 +345,7 @@
 		      div.removeChild(div.firstChild);
 		    }
 		    var paper = Raphael("canvas", (window.innerWidth* 8/12), window.innerHeight);
+		    $("#simulation").hide();
 		}
 
 		// Get simulation start info 
@@ -297,6 +357,34 @@
 		    sim.innerHTML += 'Enter destination IP: </br>';
 		    sim.innerHTML += '<input type="text" id="dest" placeholder="Destination IP"></br>';
 		    sim.innerHTML += '<input type="button" id="startsim" value="Start Simulation" onclick="simulate()"> <br>';
+		    $("#simulation").show();
+		}
+
+
+		function validateIPAddress(inputText)
+		{
+			var ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+		 
+		 	if(inputText.match(ipformat))
+			{
+		 		return true;
+		 	}
+		 	else
+		 	{
+		 		alert("You have entered an invalid IP address!");
+				return false;
+		 	}
+		}
+
+		function checkExistingIP(inputText)
+		{
+			if(ips.includes(inputText))
+			{
+				alert("IP address already exists");
+				return false;
+			}
+			else
+				return true;
 		}
 
 		var h;
@@ -306,43 +394,64 @@
 		// Big function for simulation
 		function simulate()
 		{	
-			function curve(x, y, colour) 
+			source = document.getElementById("src").value;
+			destination = document.getElementById("dest").value;
+
+			if(validateIPAddress(source) && validateIPAddress(destination))
 			{
+				paths = [];
+				for (source in ipConnectionMap)
+				{
+					if(ipConnectionMap.hasOwnProperty(source))
+					{
+						console.log(ipConnectionMap[source]);
+						key = source + " " + ipConnectionMap[source];
+						paths.push(ipConnPathMap[key]);
+						console.log(ipConnPathMap[key]);
+					}
+					else
+						alert("No connection found");
+				}
+			}
 
-	        	h = paper.circle(x, y, 5, 5).attr(
-	        	{
-	            	stroke: "none",
-	            	fill: colour
-	        	});
+
+			// function curve(x, y, colour) 
+			// {
+
+	  //       	h = paper.circle(x, y, 5, 5).attr(
+	  //       	{
+	  //           	stroke: "none",
+	  //           	fill: colour
+	  //       	});
 	        	
-	        	var path = curveStart+curveEnd;
-	            myPath = paper.path(path).attr(
-	            {
-	                stroke: colour,
-	                "stroke-width": 2,
-	                "stroke-linecap": "round",
-	                "stroke-opacity": 0.2
-	            });
-    		}
+	  //       	var path = curveStart+curveEnd;
+	  //           myPath = paper.path(path).attr(
+	  //           {
+	  //               stroke: colour,
+	  //               "stroke-width": 2,
+	  //               "stroke-linecap": "round",
+	  //               "stroke-opacity": 0.2
+	  //           });
+   //  		}
 
-    		curve(X,Y,"red");
-    		animation = window.setInterval("animate()", 10);  //execute the animation function all 10ms (change the value for another speed)
-		};
+   //  		curve(X,Y,"red");
+   //  		animation = window.setInterval("animate()", 10);  //execute the animation function all 10ms (change the value for another speed)
+		}
 
-		var counter = 0;    // a counter that counts animation steps
-		function animate()
-		{
-    		//break as soon as the total length is reached
-    		if(myPath.getTotalLength() <= counter)
-    		{   
-        		clearInterval(animation);
-        		return;
-    		}
+		// var counter = 0;    // a counter that counts animation steps
+		// function animate()
+		// {
+  //   		//break as soon as the total length is reached
+  //   		if(myPath.getTotalLength() <= counter)
+  //   		{   
+  //       		clearInterval(animation);
+  //       		return;
+  //   		}
 
-	    	var pos = myPath.getPointAtLength(counter);   //get the position (see Raphael docs)
-	    	h.attr({cx: pos.x, cy: pos.y});  //set the circle position
+	 //    	var pos = myPath.getPointAtLength(counter);   //get the position (see Raphael docs)
+	 //    	h.attr({cx: pos.x, cy: pos.y});  //set the circle position
 	    
-	    	counter++; // count the step counter one up
-		};
+	 //    	counter++; // count the step counter one up
+		// };
 		</script>
 </html>
