@@ -217,7 +217,6 @@
 			else 
 			{
 		    	var color = typeof line == "string" ? line : "#000";
-		    
 		    	return {
 			        bg: bg && bg.split && this.path(path).attr({stroke: bg.split("|")[0], fill: "none", "stroke-width": bg.split("|")[1] || 3}),
 			        line: this.path(path).attr({stroke: color, fill: "none"}),
@@ -255,8 +254,7 @@
 				shapes[i].drag(move, dragger, up);
 			}
 		};
-
-
+ 
 		// Adding edges
 		function addEdge()
 		{
@@ -273,7 +271,24 @@
 	    				ipConnPathMapKey.push(key);
 	    				
 	    				// create connection mapping by IP addresses
-	    				ipConnectionMap[local_shapes[indexes[0]].getAttribute("id")] = local_shapes[indexes[1]].getAttribute("id");
+	    				ipConnectionMapKeys = Object.keys(ipConnectionMap);
+	    				
+	    				// if key already present, extract values and and new one
+	    				if(ipConnectionMapKeys.includes(local_shapes[indexes[0]].getAttribute("id")))
+	    				{
+	    					var ipConnectionMapValues = ipConnectionMap[local_shapes[indexes[0]].getAttribute("id")];
+		    				ipConnectionMapValues.push(local_shapes[indexes[1]].getAttribute("id"));
+		    				ipConnectionMap[local_shapes[indexes[0]].getAttribute("id")] = ipConnectionMapValues;
+		    			}
+
+		    			// if key not present, create new one
+		    			else
+		    			{
+							var ipConnectionMapValues = []
+		    				ipConnectionMapValues.push(local_shapes[indexes[1]].getAttribute("id"));
+		    				ipConnectionMap[local_shapes[indexes[0]].getAttribute("id")] = ipConnectionMapValues;
+		    			}
+
 	    				drawLine();
 	    				$("image").unbind('click');
 	    			}
@@ -296,15 +311,14 @@
 			if(validateIPAddress(ip) && checkExistingIP(ip))
 			{	
 				// Create SVG
-				var comp = paper.image("laptop.png",150,120,30,30);
+				var comp = paper.image("laptop.png",150,120,30,30).attr(
+		    	{
+		        	title : ip
+		    	});
 				
 				//add IP as id to SVG image
 				images = document.getElementsByTagName("image");
 				images[images.length - 1].setAttribute("id", "C" + ip);
-
-				// add tooltip
-				images[images.length - 1].setAttribute("data-toggle", "tooltip");
-				images[images.length - 1].setAttribute("title", "C" + ip);
 
 				ips.push(ip);
 				shapes.push(comp);
@@ -321,7 +335,10 @@
 			if(validateIPAddress(ip) && checkExistingIP(ip))
 			{
 				// Create SVG
-				var router = paper.image("router.png",150,150,30,30);
+				var router = paper.image("router.png",150,150,30,30).attr(
+				{
+					title : ip
+				});
 
 				//add IP as id to SVG image
 				images = document.getElementsByTagName("image");
@@ -344,8 +361,17 @@
 		    while(div.firstChild){
 		      div.removeChild(div.firstChild);
 		    }
-		    var paper = Raphael("canvas", (window.innerWidth* 8/12), window.innerHeight);
+		    paper = Raphael("canvas", (window.innerWidth* 8/12), window.innerHeight);
 		    $("#simulation").hide();
+
+		    // clear all arrays and objects
+			shapes = [];
+			connections = [];
+			images.length =  0;
+			ips.length = 0;
+			ipConnectionMap = {};
+			ipConnPathMap = {};
+			ipConnPathMapKey = [];
 		}
 
 		// Get simulation start info 
@@ -397,61 +423,127 @@
 			source = document.getElementById("src").value;
 			destination = document.getElementById("dest").value;
 
+			// stores all the connected objects from source
+			firstDestination = [];
+			// stores all the connected objects from source
+			secondDestination = [];
+			// stores all routers connected from source
+			routerDestination = [];
+			// stores paths of connected routers from source
+			firstPaths = [];
+			// stores paths of destination from routers
+			secondPaths = [];
+			// stores keys to access path mapping of routers from source
+			keysFirstDestination = [];
+			// stores keys to access path mapping of destination from router
+			keysSecondDestination = [];
+
 			if(validateIPAddress(source) && validateIPAddress(destination))
 			{
-				paths = [];
-				for (source in ipConnectionMap)
+				ipConnectionMapKeys = Object.keys(ipConnectionMap);
+				// console.log("C"+source);
+				
+				if(ipConnectionMapKeys.includes("C"+source))
 				{
-					if(ipConnectionMap.hasOwnProperty(source))
+					firstDestination = ipConnectionMap["C"+source];
+					if(firstDestination.length != 0)
 					{
-						console.log(ipConnectionMap[source]);
-						key = source + " " + ipConnectionMap[source];
-						paths.push(ipConnPathMap[key]);
-						console.log(ipConnPathMap[key]);
+						for (var i = 0; i < firstDestination.length; i++) 
+						{
+							// create key with source and all connected routers
+							if(firstDestination[i].substring(0,1) == "R")
+							{
+								routerDestination.push(firstDestination[i]);
+								keysFirstDestination.push("C"+source + " " + firstDestination[i]);
+							}
+						}
+
+						// push the corresponding paths
+						for (var i = 0; i < keysFirstDestination.length; i++) 
+						{
+							firstPaths.push(ipConnPathMap[keysFirstDestination[i]]);
+						}
 					}
-					else
-						alert("No connection found");
+
+					console.log("First Paths");
+					console.log(firstPaths);
+					console.log("Router Destination");
+					console.log(routerDestination);
+
+					// create key with selected routers and destination
+					for (var i = 0; i < routerDestination.length; i++) 
+					{
+						if(ipConnectionMap[routerDestination[i]] == "C"+destination)
+						{
+							keysSecondDestination.push(routerDestination[i] + " C" + destination);
+						}
+					}
+
+					// push the corresponding paths
+					for (var i = 0; i < keysSecondDestination.length; i++) 
+					{
+						secondPaths.push(ipConnPathMap[keysSecondDestination[i]]);
+					}
+
+					console.log("Second Paths");
+					console.log(secondPaths);
+
 				}
+				else
+				{
+					alert("No such connection");
+				}
+
+				
 			}
-
-
-			// function curve(x, y, colour) 
-			// {
-
-	  //       	h = paper.circle(x, y, 5, 5).attr(
-	  //       	{
-	  //           	stroke: "none",
-	  //           	fill: colour
-	  //       	});
-	        	
-	  //       	var path = curveStart+curveEnd;
-	  //           myPath = paper.path(path).attr(
-	  //           {
-	  //               stroke: colour,
-	  //               "stroke-width": 2,
-	  //               "stroke-linecap": "round",
-	  //               "stroke-opacity": 0.2
-	  //           });
-   //  		}
-
-   //  		curve(X,Y,"red");
-   //  		animation = window.setInterval("animate()", 10);  //execute the animation function all 10ms (change the value for another speed)
+			curve(X,Y,"black");
+    		animation = window.setInterval("animate()", 10);  //execute the animation function all 10ms (change the value for another speed)
 		}
 
-		// var counter = 0;    // a counter that counts animation steps
-		// function animate()
-		// {
-  //   		//break as soon as the total length is reached
-  //   		if(myPath.getTotalLength() <= counter)
-  //   		{   
-  //       		clearInterval(animation);
-  //       		return;
-  //   		}
+   		var counter = 0;    // a counter that counts animation steps
+   		// Stores all the path elements
+   		animationPaths = [];
 
-	 //    	var pos = myPath.getPointAtLength(counter);   //get the position (see Raphael docs)
-	 //    	h.attr({cx: pos.x, cy: pos.y});  //set the circle position
-	    
-	 //    	counter++; // count the step counter one up
-		// };
+		function curve(x, y, colour)
+		{
+
+		    h = paper.circle(x, y, 5, 5).attr(
+		    {
+		        stroke: "none",
+		        fill: colour
+		    });
+		       
+		    // TODO: ONLY TAKES INTO CONSIDERATION THE FIRST PATH
+		    var path = firstPaths[0] + secondPaths[0];
+		    
+		    myPath = paper.path(path).attr(
+		    {
+		        stroke: colour,
+		        "stroke-width": 2,
+		        "stroke-linecap": "round",
+		        "stroke-opacity": 0.2
+		    });
+		}
+
+		function animate()
+		{
+			animationPaths = document.getElementsByTagName("path");
+   			// console.log(animationPaths);
+		    
+		    //break as soon as the total length is reached
+		    if(myPath.getTotalLength() <= counter)
+		    {  
+		        clearInterval(animation);
+		        $("circle").remove();
+		        // remove the duplicated animation path
+		        animationPaths[animationPaths.length - 1].remove();
+		        return;
+		    }
+
+		    var pos = myPath.getPointAtLength(counter);   //get the position (see Raphael docs)
+		    h.attr({cx: pos.x, cy: pos.y});  //set the circle position
+		   
+		    counter++; // count the step counter one up
+		};	
 		</script>
 </html>
