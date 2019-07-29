@@ -416,13 +416,12 @@
 		var h;
 		var myPath;
 		var animation;
+
+
 		
 		// Big function for simulation
 		function simulate()
 		{	
-			source = document.getElementById("src").value;
-			destination = document.getElementById("dest").value;
-
 			// stores all the connected objects from source
 			firstDestination = [];
 			// stores all the connected objects from source
@@ -433,10 +432,21 @@
 			firstPaths = [];
 			// stores paths of destination from routers
 			secondPaths = [];
+			// stores split path of router from destination
+			thirdPathArray = [];
+			// stores split path of source from router
+			fourthPathArray = [];
 			// stores keys to access path mapping of routers from source
 			keysFirstDestination = [];
 			// stores keys to access path mapping of destination from router
 			keysSecondDestination = [];
+			// store reversed paths from destination to source
+			thirdPath = "";
+			fourthPath = "";
+
+
+			source = document.getElementById("src").value;
+			destination = document.getElementById("dest").value;
 
 			if(validateIPAddress(source) && validateIPAddress(destination))
 			{
@@ -465,11 +475,12 @@
 						}
 					}
 
-					console.log("First Paths");
-					console.log(firstPaths);
-					console.log("Router Destination");
-					console.log(routerDestination);
+					// console.log("First Paths");
+					// console.log(firstPaths);
+					// console.log("Router Destination");
+					// console.log(routerDestination);
 
+					// SECOND STEP
 					// create key with selected routers and destination
 					for (var i = 0; i < routerDestination.length; i++) 
 					{
@@ -485,22 +496,28 @@
 						secondPaths.push(ipConnPathMap[keysSecondDestination[i]]);
 					}
 
-					console.log("Second Paths");
-					console.log(secondPaths);
+					// console.log("Second Paths");
+					// console.log(secondPaths);
 
+					// THIRD STEP
+ 					thirdPathArray = secondPaths[0].split(",");
+					thirdPath = reversePath(thirdPathArray).toString();
+
+					// FOURTH STEP 
+					fourthPathArray = firstPaths[0].split(",");
+					fourthPath = reversePath(fourthPathArray).toString();
 				}
 				else
 				{
 					alert("No such connection");
 				}
-
-				
 			}
 			curve(X,Y,"black");
     		animation = window.setInterval("animate()", 10);  //execute the animation function all 10ms (change the value for another speed)
 		}
 
-   		var counter = 0;    // a counter that counts animation steps
+		// a counter that counts animation steps
+   		var counter = 0;    
    		// Stores all the path elements
    		animationPaths = [];
 
@@ -514,7 +531,7 @@
 		    });
 		       
 		    // TODO: ONLY TAKES INTO CONSIDERATION THE FIRST PATH
-		    var path = firstPaths[0] + secondPaths[0];
+		    var path = firstPaths[0] + secondPaths[0] + thirdPath + fourthPath;
 		    
 		    myPath = paper.path(path).attr(
 		    {
@@ -544,6 +561,49 @@
 		    h.attr({cx: pos.x, cy: pos.y});  //set the circle position
 		   
 		    counter++; // count the step counter one up
-		};	
+		};
+
+		// Function to reverse path
+		function reversePath(path)
+		{
+			reverse = [];
+			reverse[0] = path[0];
+			reverse[8] = path[1];
+			reverse[9] = path[2];
+			reverse[3] = path[3];
+			reverse[6] = path[4];
+			reverse[7] = path[5];
+			reverse[4] = path[6];
+			reverse[5] = path[7];
+			reverse[1] = path[8];
+			reverse[2] = path[9];
+
+			return reverse;
+		}
+
+		// // Function to clear all variables for next simulation when IP values change
+		// $('#startsim').on('click', function() {
+  //   		// stores all the connected objects from source
+		// 	firstDestination = [];
+		// 	// stores all the connected objects from source
+		// 	secondDestination = [];
+		// 	// stores all routers connected from source
+		// 	routerDestination = [];
+		// 	// stores paths of connected routers from source
+		// 	firstPaths = [];
+		// 	// stores paths of destination from routers
+		// 	secondPaths = [];
+		// 	// stores split path of router from destination
+		// 	thirdPathArray = [];
+		// 	// stores split path of source from router
+		// 	fourthPathArray = [];
+		// 	// stores keys to access path mapping of routers from source
+		// 	keysFirstDestination = [];
+		// 	// stores keys to access path mapping of destination from router
+		// 	keysSecondDestination = [];
+		// 	// store reversed paths from destination to source
+		// 	thirdPath = "";
+		// 	fourthPath = "";
+		// });
 		</script>
 </html>
