@@ -93,6 +93,7 @@
 	                            <input type="button" class="addEdge" value="Add Edge" data-toggle="tooltip" title="Click on two objects to link them" onclick="addEdge()">
 	                            <input type="button" class="sim" value="Simulate" onclick="getSimulationInfo()">
 	                            <input type="button" class="clear" value="Clear" onclick="clearCanvas()">
+	                            <input type="button" class="next" value="Next" onclick="nextStep()">
 	                        </div>
 	                    </div>
 	                </div>
@@ -496,8 +497,8 @@
 						secondPaths.push(ipConnPathMap[keysSecondDestination[i]]);
 					}
 
-					// console.log("Second Paths");
-					// console.log(secondPaths);
+					console.log("Second Paths");
+					console.log(secondPaths);
 
 					// THIRD STEP
  					thirdPathArray = secondPaths[0].split(",");
@@ -520,6 +521,8 @@
    		var counter = 0;    
    		// Stores all the path elements
    		animationPaths = [];
+   		// Flag for continuing animation
+   		flag = true;
 
 		function curve(x, y, colour)
 		{
@@ -550,11 +553,21 @@
 		    //break as soon as the total length is reached
 		    if(myPath.getTotalLength() <= counter)
 		    {  
+
 		        clearInterval(animation);
 		        $("circle").remove();
 		        // remove the duplicated animation path
 		        animationPaths[animationPaths.length - 1].remove();
-		        return;
+		        
+		        // set initial conditions to repeat animation again if flag is true
+		        if(flag)
+		        {
+		        	counter = 0;
+		        	curve(X,Y,"black");
+    				animation = window.setInterval("animate()", 10);
+    			}
+    			else
+		        	return;
 		    }
 
 		    var pos = myPath.getPointAtLength(counter);   //get the position (see Raphael docs)
@@ -579,6 +592,11 @@
 			reverse[2] = path[9];
 
 			return reverse;
+		}
+
+		function nextStep()
+		{
+			flag = false;
 		}
 
 		// // Function to clear all variables for next simulation when IP values change
