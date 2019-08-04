@@ -93,7 +93,7 @@
 	                            <input type="button" class="addEdge" value="Add Edge" data-toggle="tooltip" title="Click on two objects to link them" onclick="addEdge()">
 	                            <input type="button" class="sim" value="Simulate" onclick="getSimulationInfo()">
 	                            <input type="button" class="clear" value="Clear" onclick="clearCanvas()">
-	                            <input type="button" class="next" value="Next" onclick="nextStep()">
+	                            <input type="button" class="next" value="Next">
 	                        </div>
 	                    </div>
 	                </div>
@@ -208,7 +208,7 @@
 			X=path.slice(2,9);
 			Y=path.slice(10,16);
 
-			console.log(ipConnPathMap);
+			// console.log(ipConnPathMap);
 
 			if (line && line.line) 
 			{
@@ -445,77 +445,146 @@
 			thirdPath = "";
 			fourthPath = "";
 
+			firstSim();
 
-			source = document.getElementById("src").value;
-			destination = document.getElementById("dest").value;
-
-			if(validateIPAddress(source) && validateIPAddress(destination))
+			function firstSim()
 			{
-				ipConnectionMapKeys = Object.keys(ipConnectionMap);
-				// console.log("C"+source);
-				
-				if(ipConnectionMapKeys.includes("C"+source))
-				{
-					firstDestination = ipConnectionMap["C"+source];
-					if(firstDestination.length != 0)
-					{
-						for (var i = 0; i < firstDestination.length; i++) 
-						{
-							// create key with source and all connected routers
-							if(firstDestination[i].substring(0,1) == "R")
-							{
-								routerDestination.push(firstDestination[i]);
-								keysFirstDestination.push("C"+source + " " + firstDestination[i]);
-							}
-						}
+				source = document.getElementById("src").value;
+				destination = document.getElementById("dest").value;
 
-						// push the corresponding paths
-						for (var i = 0; i < keysFirstDestination.length; i++) 
+				if(validateIPAddress(source) && validateIPAddress(destination))
+				{
+					ipConnectionMapKeys = Object.keys(ipConnectionMap);
+					// console.log("C"+source);
+					
+					if(ipConnectionMapKeys.includes("C"+source))
+					{
+						firstDestination = ipConnectionMap["C"+source];
+						if(firstDestination.length != 0)
 						{
-							firstPaths.push(ipConnPathMap[keysFirstDestination[i]]);
+							for (var i = 0; i < firstDestination.length; i++) 
+							{
+								// create key with source and all connected routers
+								if(firstDestination[i].substring(0,1) == "R")
+								{
+									routerDestination.push(firstDestination[i]);
+									keysFirstDestination.push("C"+source + " " + firstDestination[i]);
+								}
+							}
+
+							// push the corresponding paths
+							for (var i = 0; i < keysFirstDestination.length; i++) 
+							{
+								firstPaths.push(ipConnPathMap[keysFirstDestination[i]]);
+							}
+
+							path = firstPaths[0];
+							curve(X,Y,"black", path);
+    						animation = window.setInterval("animate()", 10);
+
+    						$(".next").on("click", f1);
 						}
 					}
+					else
+					{
+						alert("No such connection");
+					}
+				}
+			}
 
-					// console.log("First Paths");
-					// console.log(firstPaths);
-					// console.log("Router Destination");
-					// console.log(routerDestination);
-
-					// SECOND STEP
-					// create key with selected routers and destination
-					for (var i = 0; i < routerDestination.length; i++) 
+			// SECOND STEP
+			// create key with selected routers and destination
+			function secondSim()
+			{
+				flag = true;
+				for (var i = 0; i < routerDestination.length; i++) 
+				{
+					if(ipConnectionMap[routerDestination[i]].length > 1)
+					{
+						right = ipConnectionMap[routerDestination[i]];
+						for (var j = 0; i < right.length; j++) 
+						{
+							if(right[j] == "C"+destination)
+							{
+								keysSecondDestination.push(routerDestination[i] + " C" + destination);
+								break;
+							}
+						}
+					}
+					else
 					{
 						if(ipConnectionMap[routerDestination[i]] == "C"+destination)
 						{
 							keysSecondDestination.push(routerDestination[i] + " C" + destination);
 						}
 					}
-
-					// push the corresponding paths
-					for (var i = 0; i < keysSecondDestination.length; i++) 
-					{
-						secondPaths.push(ipConnPathMap[keysSecondDestination[i]]);
-					}
-
-					console.log("Second Paths");
-					console.log(secondPaths);
-
-					// THIRD STEP
- 					thirdPathArray = secondPaths[0].split(",");
-					thirdPath = reversePath(thirdPathArray).toString();
-
-					// FOURTH STEP 
-					fourthPathArray = firstPaths[0].split(",");
-					fourthPath = reversePath(fourthPathArray).toString();
 				}
-				else
+
+				// push the corresponding paths
+				for (var i = 0; i < keysSecondDestination.length; i++) 
 				{
-					alert("No such connection");
+					secondPaths.push(ipConnPathMap[keysSecondDestination[i]]);
 				}
+
+				path = secondPaths[0];
+				curve(X,Y,"black", path);
+    			animation = window.setInterval("animate()", 10);
+
+    			$(".next").off("click", f1).on("click", f2);
 			}
-			curve(X,Y,"black");
-    		animation = window.setInterval("animate()", 10);  //execute the animation function all 10ms (change the value for another speed)
-		}
+
+			// THIRD STEP
+			function thirdSim()
+			{
+				flag = true;
+	 			thirdPathArray = secondPaths[0].split(",");
+				thirdPath = reversePath(thirdPathArray).toString();
+
+				path = thirdPath;
+				curve(X,Y,"black", path);
+    			animation = window.setInterval("animate()", 10);
+
+    			$(".next").off("click", f2).on("click", f3);
+			}
+
+			// FOURTH STEP 
+			function fourthSim()
+			{	
+				flag = true;
+				fourthPathArray = firstPaths[0].split(",");
+				fourthPath = reversePath(fourthPathArray).toString();
+
+				path = fourthPath;
+				curve(X,Y,"black", path);
+    			animation = window.setInterval("animate()", 10);
+
+    			$(".next").off("click", f3).on("click", f4);
+			}
+
+			function f1()
+			{
+				flag = false;
+    			setTimeout(secondSim, 5000);
+			}
+
+			function f2()
+			{
+				flag = false;
+    			setTimeout(thirdSim, 5000);
+			}
+
+			function f3()
+			{
+				flag = false;
+    			setTimeout(fourthSim, 5000);
+			}
+
+			function f4()
+			{
+				flag = false;
+				alert("Animation complete");
+			}
+		};
 
 		// a counter that counts animation steps
    		var counter = 0;    
@@ -524,7 +593,7 @@
    		// Flag for continuing animation
    		flag = true;
 
-		function curve(x, y, colour)
+		function curve(x, y, colour, path)
 		{
 
 		    h = paper.circle(x, y, 5, 5).attr(
@@ -534,7 +603,7 @@
 		    });
 		       
 		    // TODO: ONLY TAKES INTO CONSIDERATION THE FIRST PATH
-		    var path = firstPaths[0] + secondPaths[0] + thirdPath + fourthPath;
+		    var path = path;
 		    
 		    myPath = paper.path(path).attr(
 		    {
@@ -548,12 +617,11 @@
 		function animate()
 		{
 			animationPaths = document.getElementsByTagName("path");
-   			// console.log(animationPaths);
+   			//console.log(animationPaths);
 		    
 		    //break as soon as the total length is reached
 		    if(myPath.getTotalLength() <= counter)
 		    {  
-
 		        clearInterval(animation);
 		        $("circle").remove();
 		        // remove the duplicated animation path
@@ -563,7 +631,7 @@
 		        if(flag)
 		        {
 		        	counter = 0;
-		        	curve(X,Y,"black");
+		        	curve(X,Y,"black", path);
     				animation = window.setInterval("animate()", 10);
     			}
     			else
@@ -593,35 +661,5 @@
 
 			return reverse;
 		}
-
-		function nextStep()
-		{
-			flag = false;
-		}
-
-		// // Function to clear all variables for next simulation when IP values change
-		// $('#startsim').on('click', function() {
-  //   		// stores all the connected objects from source
-		// 	firstDestination = [];
-		// 	// stores all the connected objects from source
-		// 	secondDestination = [];
-		// 	// stores all routers connected from source
-		// 	routerDestination = [];
-		// 	// stores paths of connected routers from source
-		// 	firstPaths = [];
-		// 	// stores paths of destination from routers
-		// 	secondPaths = [];
-		// 	// stores split path of router from destination
-		// 	thirdPathArray = [];
-		// 	// stores split path of source from router
-		// 	fourthPathArray = [];
-		// 	// stores keys to access path mapping of routers from source
-		// 	keysFirstDestination = [];
-		// 	// stores keys to access path mapping of destination from router
-		// 	keysSecondDestination = [];
-		// 	// store reversed paths from destination to source
-		// 	thirdPath = "";
-		// 	fourthPath = "";
-		// });
 		</script>
 </html>
