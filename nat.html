@@ -88,12 +88,19 @@
 	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP">
 	                            <input type="button" class="addComp" value="Add Computer" onclick="addComputer()">
 	                            Add Router: <br>
-	                            <input type="text" class="routerIP" name="routerIP" placeholder="Router IP"> 
-	                            <input type="button" class="addRout" value="Add Router" onclick="addRouter()">
-	                            <input type="button" class="addEdge" value="Add Edge" data-toggle="tooltip" title="Click on two objects to link them" onclick="addEdge()">
+	                            <input type="text" class="routerIP1" name="routerIP" placeholder="Router Port 1 IP" data-toggle="tooltip" title="Port 1 and PC 1 should be in same network">
+	                            <input type="text" class="routerIP2" name="routerIP" placeholder="Router Port 2 IP" data-toggle="tooltip" title="Port 2 and PC 2 should be in same network"> 
+	                            <input type="button" class="addRout" value="Add Router" onclick="addRouter()" data-toggle="tooltip" title="Ports should be in different networks">
+	                            <input type="button" class="addEdge" value="Add Edge" data-toggle="tooltip" title="Click on two objects to connect them" onclick="addEdge()">
 	                            <input type="button" class="sim" value="Simulate" onclick="getSimulationInfo()">
 	                            <input type="button" class="clear" value="Clear" onclick="clearCanvas()">
 	                            <input type="button" class="next" value="Next">
+	                        	</br>
+	                        	</br>
+
+	                            <div class="col-sm-12">
+									<div id="table1"></div>
+								</div>
 	                        </div>
 	                    </div>
 	                </div>
@@ -103,7 +110,8 @@
 	                            <div id="simulation"></div>
 	                        </div>
 	                        <div class="col-sm-6">
-	                            <div id="table"></div>
+	                            <div  id="forwardTable"></div>
+	                            <div  id="backwardTable"></div>
 	                        </div>
 	                    </div>
 	                    <div id="srcout"></div>
@@ -309,7 +317,7 @@
 			// Get IP address
 			var ip = document.getElementsByClassName("computerIP")[0].value;
 			
-			if(validateIPAddress(ip) && checkExistingIP(ip))
+			if(validateIPAddress(ip) && checkExistingIP(ip)  && ips.length != 3)
 			{	
 				// Create SVG
 				var comp = paper.image("laptop.png",150,120,30,30).attr(
@@ -325,33 +333,69 @@
 				shapes.push(comp);
 				movement(shapes);
 			}
+
+			else if(ips.length == 3)
+			{
+				if(validateIPAddress(ip) && checkExistingIP(ip) && checkSameNetwork(ips[2],ip))
+				{
+					// Create SVG
+					var comp = paper.image("laptop.png",150,120,30,30).attr(
+			    	{
+			        	title : ip
+			    	});
+					
+					//add IP as id to SVG image
+					images = document.getElementsByTagName("image");
+					images[images.length - 1].setAttribute("id", "C" + ip);
+
+					ips.push(ip);
+					shapes.push(comp);
+					movement(shapes);					
+				}
+				else
+				{
+					alert("Computer 2 and Router port 2 should belong to the same network.");
+				}
+			}
 		}
 
 		// Add routers
 		function addRouter() 
 		{ 
-			// Get IP address
-			var ip = document.getElementsByClassName("routerIP")[0].value;
+			// Get IP addresses
+			var ip1 = document.getElementsByClassName("routerIP1")[0].value;
+			var ip2 = document.getElementsByClassName("routerIP2")[0].value;
 			
-			if(validateIPAddress(ip) && checkExistingIP(ip))
-			{
-				// Create SVG
-				var router = paper.image("router.png",150,150,30,30).attr(
+			if(checkSameNetwork(ips[0],ip1) && validateIPAddress(ip1) && checkExistingIP(ip1) && validateIPAddress(ip2) && checkExistingIP(ip2))
+			{   
+				if(!checkSameNetwork(ip1,ip2))
 				{
-					title : ip
-				});
+					// Create SVG
+					var router = paper.image("router.png",150,150,30,30).attr(
+					{
+						title : ip1+"/"+ip2
+					});
 
-				//add IP as id to SVG image
-				images = document.getElementsByTagName("image");
-				images[images.length - 1].setAttribute("id", "R" + ip);
+					//add IP as id to SVG image
+					images = document.getElementsByTagName("image");
+					images[images.length - 1].setAttribute("id", "R" + ip1+"/"+ip2);
+					
+					ips.push(ip1);
+					ips.push(ip2);
+					shapes.push(router);
+					movement(shapes);
+				}
 
-				// add tooltip
-				images[images.length - 1].setAttribute("data-toggle", "tooltip");
-				images[images.length - 1].setAttribute("title", "R" + ip);
-
-				ips.push(ip);
-				shapes.push(router);
-				movement(shapes);
+				else
+				{
+					alert("IP addresses of the two ports should belong to different networks.");
+					return;
+				}
+			}
+			else
+			{
+				alert("IP addresses of PC 1 and router port 1 should be in same network.");
+				return;
 			}
 		}
 
@@ -383,7 +427,7 @@
 		    sim.innerHTML += '<input type="text" id="src" placeholder="Source IP"></br>';
 		    sim.innerHTML += 'Enter destination IP: </br>';
 		    sim.innerHTML += '<input type="text" id="dest" placeholder="Destination IP"></br>';
-		    sim.innerHTML += '<input type="button" id="startsim" value="Start Simulation" onclick="simulate()"> <br>';
+		    sim.innerHTML += '<input type="button" id="startsim" value="Start Simulation" onclick="simulate(); makeRoutingTable()"> <br>';
 		    $("#simulation").show();
 		}
 
@@ -479,6 +523,8 @@
 							}
 
 							path = firstPaths[0];
+							createTableForward();
+							addRowsForward(source, firstDestination[0].split("/")[0].substring(1));
 							curve(X,Y,"black", path);
     						animation = window.setInterval("animate()", 10);
 
@@ -527,6 +573,7 @@
 				}
 
 				path = secondPaths[0];
+				addRowsForward(firstDestination[0].split("/")[1], destination);
 				curve(X,Y,"black", path);
     			animation = window.setInterval("animate()", 10);
 
@@ -541,6 +588,8 @@
 				thirdPath = reversePath(thirdPathArray).toString();
 
 				path = thirdPath;
+				createTableBackward();
+				addRowsBackward(destination, firstDestination[0].split("/")[1]);
 				curve(X,Y,"black", path);
     			animation = window.setInterval("animate()", 10);
 
@@ -555,6 +604,7 @@
 				fourthPath = reversePath(fourthPathArray).toString();
 
 				path = fourthPath;
+				addRowsBackward(firstDestination[0].split("/")[0].substring(1), source);
 				curve(X,Y,"black", path);
     			animation = window.setInterval("animate()", 10);
 
@@ -661,5 +711,138 @@
 
 			return reverse;
 		}
+
+		// Method to check if two IP addresses belong to the same network or not
+		function checkSameNetwork(ip1,ip2)
+		{
+			//console.log("in function");
+			var mask;
+			var str1 = ip1.substring(0,ip1.indexOf("."));
+			var integer = parseInt(str1,10);
+			//checking for mask value
+			if(integer>=1 && integer<=126)
+			{
+				mask = "255.0.0.0";
+			}
+			else if(integer >=128 && integer<=191)
+			{
+				mask = "255.255.0.0";
+			}
+			else if(integer >= 192 && integer <= 223)
+			{
+				mask = "255.255.255.0";
+			}
+			for(var i=0;i<ip1.length;i++)
+			{
+				if((ip1[i] & mask[i]) != (ip2[i] & mask[i]))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
+		var x = document.createElement("TABLE");
+		function createTableForward()
+		{
+			var array = ["Source IP","Destination IP"];
+
+  			x.border="1";
+  			var columnCount = 2; 
+ 			var row = x.insertRow(-1);
+
+ 			for(var i=0;i<columnCount;i++)
+ 			{
+ 				var headerCell = document.createElement("TH");
+ 				headerCell.innerHTML = array[i];
+ 				row.appendChild(headerCell);
+ 			}
+
+	        var ftable = document.getElementById("forwardTable");
+	        ftable.innerHTML = "<i>Translation Table Forward Path </i></br></br>";
+	        ftable.appendChild(x);
+		}
+
+		var y = document.createElement("TABLE");
+		function createTableBackward()
+		{
+			var array = ["Source IP","Destination IP"];
+			var columnCount = 2; 
+	        y.border="1";
+	        var rows = y.insertRow(-1);
+
+	        for(var k=0;k<columnCount;k++)
+	        {
+	        	var headerCells = document.createElement("TH");
+	        	headerCells.innerHTML = array[k];
+	        	rows.appendChild(headerCells);
+	        }
+
+ 			var btable=document.getElementById("backwardTable");
+	        btable.innerHTML="</br><i>Translation Table Reverse Path</i></br></br>";
+	        btable.appendChild(y);
+		}
+
+		function addRowsForward(src, dest)
+    	{
+    		arr = [src, dest];
+            row = x.insertRow(-1);
+           
+	        for (var j = 0; j < 2; j++) 
+	        {
+	            var cell = row.insertCell(-1);
+	            cell.innerHTML = arr[j];
+	        }
+       	}
+	
+		function addRowsBackward(src, dest)
+		{
+			arr = [src, dest];
+            row = y.insertRow(-1);
+           
+	        for (var j = 0; j < 2; j++) 
+	        {
+	            var cell = row.insertCell(-1);
+	            cell.innerHTML = arr[j];
+	        }
+		}	
+
+	    function makeRoutingTable()
+	    {
+	    	var array = new Array();
+	    	array.push(["Source Network","Destination Network"]);
+	  		var x = document.createElement("TABLE");
+	  		x.border="1";
+	  		var columnCount = 2;
+	 		var row = x.insertRow(-1);
+	 		
+	 		for(var i=0;i<columnCount;i++)
+	 		{
+	 			var headerCell = document.createElement("TH");
+	 			headerCell.innerHTML = array[0][i];
+	 			row.appendChild(headerCell);
+	 		}
+
+	 		//get ip1 and ip2 ie the port addresses, substring of each string, add 0's to each and only print that out.
+	 		var n1 = ips[1].substring(0,2) + "0.0.0";
+	 		var n2 = ips[2].substring(0,2) + "0.0.0";
+	 		var ipArray = new Array();
+	 		ipArray.push(n1);
+	 		ipArray.push(n2);
+
+	 		for (var i = 0; i < 1; i++)
+	 		{
+	            row = x.insertRow(-1);	
+	            for (var j = 0; j < columnCount; j++)
+	            {
+	                var cell = row.insertCell(-1);
+	                cell.innerHTML = ipArray[j];
+	            }
+	        }
+
+	        var table = document.getElementById("table1");
+	        table.innerHTML = "<i>Routing Table<i>";
+	        table.appendChild(x);	
+	    }
 		</script>
 </html>
