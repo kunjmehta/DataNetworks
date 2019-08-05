@@ -216,8 +216,6 @@
 			X=path.slice(2,9);
 			Y=path.slice(10,16);
 
-			// console.log(ipConnPathMap);
-
 			if (line && line.line) 
 			{
 			    line.bg && line.bg.attr({path: path});
@@ -302,7 +300,6 @@
 	    				$("image").unbind('click');
 	    			}
 			})
-			console.log(ipConnectionMap);
 		}
 
 		// Draw edges on the canvas
@@ -499,7 +496,6 @@
 				if(validateIPAddress(source) && validateIPAddress(destination))
 				{
 					ipConnectionMapKeys = Object.keys(ipConnectionMap);
-					// console.log("C"+source);
 					
 					if(ipConnectionMapKeys.includes("C"+source))
 					{
@@ -667,7 +663,6 @@
 		function animate()
 		{
 			animationPaths = document.getElementsByTagName("path");
-   			//console.log(animationPaths);
 		    
 		    //break as soon as the total length is reached
 		    if(myPath.getTotalLength() <= counter)
@@ -713,9 +708,8 @@
 		}
 
 		// Method to check if two IP addresses belong to the same network or not
-		function checkSameNetwork(ip1,ip2)
+		function checkSameNetwork(ip1, ip2)
 		{
-			//console.log("in function");
 			var mask;
 			var str1 = ip1.substring(0,ip1.indexOf("."));
 			var integer = parseInt(str1,10);
@@ -732,15 +726,40 @@
 			{
 				mask = "255.255.255.0";
 			}
-			for(var i=0;i<ip1.length;i++)
+			else
 			{
-				if((ip1[i] & mask[i]) != (ip2[i] & mask[i]))
+				mask = "255.255.255.255";
+			}
+
+			if(isEqualIPAddress(ip1, ip2, mask))
+				return true;
+			else
+				return false;
+
+			function isEqualIPAddress (addr1,addr2,mask)
+			{
+				var 
+				res1 = [],
+				res2 = [];
+				addr1 = addr1.split(".");
+				addr2 = addr2.split(".");
+				mask  = mask.split(".");
+
+				for(var i = 0,ilen = addr1.length; i <ilen ; i += 1)
+				{
+					res1.push(parseInt(addr1[i]) & parseInt(mask[i]));
+					res2.push(parseInt(addr2[i]) & parseInt(mask[i]));
+				}
+				
+				if(res1.join(".") == res2.join(".")){
+					return true;
+				}
+				else
 				{
 					return false;
 				}
 			}
-			return true;
-		}
+		};
 
 		var x = document.createElement("TABLE");
 		function createTableForward()
