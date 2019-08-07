@@ -74,8 +74,42 @@
 		    <div id="left-bar"></div>
 		    <div id="right-bar"></div>
 		    <div id="maintop">
-		            Network address translation (NAT) is a method of remapping one IP address space into another by modifying network address information in the IP header of packets while they are in transit across a traffic routing device. The technique was originally used as a shortcut to avoid the need to readdress every host when a network was moved. It has become a popular and essential tool in conserving global address space in the face of IPv4 address exhaustion. </br>
-		            Note: The simulation supports only classful addressing.
+		        Network address translation (NAT) is a method of remapping one IP address space into another by modifying network address information in the IP header of packets while they are in transit across a traffic routing device. The technique was originally used as a shortcut to avoid the need to readdress every host when a network was moved. It has become a popular and essential tool in conserving global address space in the face of IPv4 address exhaustion. </br>
+		        Note: The simulation supports only classful addressing.
+					
+				<div style="text-align:left"><table class="bordered" width="68%" summary="This table shows the private IP address ranges for class A, B and C networks" dir="ltr">
+					<caption>Private Address Ranges for class A, B and C networks</caption>
+					<tr>
+<th scope="column" width="13%" align="center" valign="top" style="background-color: ;">Class
+</th>
+<th scope="column" width="61%" align="left" valign="top" style="background-color: ;">Private IP Address Range
+</th>
+<th scope="column" width="26%" align="left" valign="top" style="background-color: ;">Subnet Mask
+</th>
+</tr>
+					<tr>
+						<th scope="row" width="13%" align="center" valign="top">A </th>
+						<td width="61%" align="left" valign="top">10.0.0.0 to 10.255.255.255 </td>
+						<td width="26%" align="left" valign="top">255.0.0.0 </td>
+</td>
+					</tr>
+<tr>
+<th scope="row" width="13%" align="center" valign="top" style="background-color: ;">B
+</th>
+<td width="61%" align="left" valign="top" style="background-color: ;">172.16.0.0 to 172.31.255.255
+</td>
+<td width="26%" align="left" valign="top" style="background-color: ;">255.240.0.0
+</td>
+</tr>
+<tr>
+<th scope="row" width="13%" align="center" valign="top" style="background-color: ;">C
+</th>
+<td width="61%" align="left" valign="top" style="background-color: ;">192.168.0.0 to 192.168.255.255
+</td>
+<td width="26%" align="left" valign="top" style="background-color: ;">255.255.0.0
+</td>
+</tr>
+</table></div>
 		    </div>
 		</div>
 
@@ -93,7 +127,7 @@
 	                            <input type="text" class="routerIP1" name="routerIP" placeholder="Router Port 1 IP" data-toggle="tooltip" title="Port 1 and PC 1 should be in same network">
 	                            <input type="text" class="routerIP2" name="routerIP" placeholder="Router Port 2 IP" data-toggle="tooltip" title="Port 2 and PC 2 should be in same network"> 
 	                            <input type="button" class="addRout" value="Add Router" onclick="addRouter()" data-toggle="tooltip" title="Ports should be in different networks">
-	                            <input type="button" class="addEdge" value="Add Edge" data-toggle="tooltip" title="Click on two objects to connect them" onclick="addEdge()">
+	                            <input type="button" class="addEdge" disabled value="Add Edge" data-toggle="tooltip" title="Click on two objects to connect them" onclick="addEdge()">
 	                            <input type="button" class="sim" value="Simulate" onclick="getSimulationInfo()">
 	                            <input type="button" class="clear" value="Clear" onclick="clearCanvas()">
 	                        	</br>
@@ -348,7 +382,9 @@
 
 					ips.push(ip);
 					shapes.push(comp);
-					movement(shapes);					
+					movement(shapes);
+
+					$(".addEdge").removeAttr("disabled");
 				}
 				else
 				{
@@ -873,13 +909,15 @@
 				else if(integer >=128 && integer<=191)
 				{
 					mask = "255.255.0.0";
-					network = ip.substring(0, ip.indexOf(".", ip.indexOf("."))) +  ".0.0";
+					ipArray = ip.split(".");
+					network = ipArray[0] + "." + ipArray[1] + ".0.0";
 					return network;
 				}
 				else if(integer >= 192 && integer <= 223)
 				{
 					mask = "255.255.255.0";
-					network = ip.substring(0, ip.indexOf(".", (ip.indexOf("."), ip.indexOf(".")))) +  ".0";
+					ipArray = ip.split(".");
+					network = ipArray[0] + "." + ipArray[1] + "." + ipArray[2] + ".0";
 					return network;
 				}
 				else
@@ -890,19 +928,26 @@
 				}
 			}
 
-	 		for (var i = 0; i < 1; i++)
-	 		{
-	            row = x.insertRow(-1);	
-	            for (var j = 0; j < columnCount; j++)
-	            {
+	        tableArray1 = [net1, "Port2"];
+			tableArray2 = [net2, "Port1"];
+			
+			row = x.insertRow(-1);	
+	        for (var j = 0; j < columnCount; j++)
+	        {
 	                var cell = row.insertCell(-1);
-	                cell.innerHTML = ipArray[j];
-	            }
+	                cell.innerHTML = tableArray1[j];
+	        }
+			
+			row = x.insertRow(-1);	
+	        for (var j = 0; j < columnCount; j++)
+	        {
+	                var cell = row.insertCell(-1);
+	                cell.innerHTML = tableArray2[j];
 	        }
 
 	        var table = document.getElementById("table1");
-	        table.innerHTML = "<i>Routing Table<i>";
+	        table.innerHTML = "<i>Routing Table<i></br>";
 	        table.appendChild(x);	
-	    }
+	    };
 		</script>
 </html>
