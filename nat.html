@@ -74,8 +74,10 @@
 		    <div id="left-bar"></div>
 		    <div id="right-bar"></div>
 		    <div id="maintop">
-		            Network address translation (NAT) is a method of remapping one IP address space into another by modifying network address information in the IP header of packets while they are in transit across a traffic routing device. The technique was originally used as a shortcut to avoid the need to readdress every host when a network was moved. It has become a popular and essential tool in conserving global address space in the face of IPv4 address exhaustion.
+		            Network address translation (NAT) is a method of remapping one IP address space into another by modifying network address information in the IP header of packets while they are in transit across a traffic routing device. The technique was originally used as a shortcut to avoid the need to readdress every host when a network was moved. It has become a popular and essential tool in conserving global address space in the face of IPv4 address exhaustion. </br>
+		            Note: The simulation supports only classful addressing.
 		    </div>
+		</div>
 
 	    <div id="mainpart">
 	            <!-- Canvas Settings -->
@@ -94,7 +96,6 @@
 	                            <input type="button" class="addEdge" value="Add Edge" data-toggle="tooltip" title="Click on two objects to connect them" onclick="addEdge()">
 	                            <input type="button" class="sim" value="Simulate" onclick="getSimulationInfo()">
 	                            <input type="button" class="clear" value="Clear" onclick="clearCanvas()">
-	                            <input type="button" class="next" value="Next">
 	                        	</br>
 	                        	</br>
 
@@ -317,7 +318,7 @@
 			if(validateIPAddress(ip) && checkExistingIP(ip)  && ips.length != 3)
 			{	
 				// Create SVG
-				var comp = paper.image("laptop.png",150,120,30,30).attr(
+				var comp = paper.image("laptop.png",150,120,50,50).attr(
 		    	{
 		        	title : ip
 		    	});
@@ -336,7 +337,7 @@
 				if(validateIPAddress(ip) && checkExistingIP(ip) && checkSameNetwork(ips[2],ip))
 				{
 					// Create SVG
-					var comp = paper.image("laptop.png",150,120,30,30).attr(
+					var comp = paper.image("laptop.png",150,120,50,50).attr(
 			    	{
 			        	title : ip
 			    	});
@@ -368,9 +369,9 @@
 				if(!checkSameNetwork(ip1,ip2))
 				{
 					// Create SVG
-					var router = paper.image("router.png",150,150,30,30).attr(
+					var router = paper.image("router.png",150,150,50,50).attr(
 					{
-						title : ip1+"/"+ip2
+						title : "Port 1:" + ip1 + "/ Port 2:"+ip2
 					});
 
 					//add IP as id to SVG image
@@ -381,6 +382,8 @@
 					ips.push(ip2);
 					shapes.push(router);
 					movement(shapes);
+
+					$(".addRout").attr("disabled" , true);
 				}
 
 				else
@@ -424,7 +427,8 @@
 		    sim.innerHTML += '<input type="text" id="src" placeholder="Source IP"></br>';
 		    sim.innerHTML += 'Enter destination IP: </br>';
 		    sim.innerHTML += '<input type="text" id="dest" placeholder="Destination IP"></br>';
-		    sim.innerHTML += '<input type="button" id="startsim" value="Start Simulation" onclick="simulate(); makeRoutingTable()"> <br>';
+		    sim.innerHTML += '<input type="button" id="startsim" value="Start Simulation" onclick="simulate();"> </br>';
+		    sim.innerHTML += '<input type="button" class="next" value="Next"  data-toggle="tooltip" title="Click for next step">'
 		    $("#simulation").show();
 		}
 
@@ -464,6 +468,7 @@
 		// Big function for simulation
 		function simulate()
 		{	
+			$("#startsim").attr("disabled" , true);
 			// stores all the connected objects from source
 			firstDestination = [];
 			// stores all the connected objects from source
@@ -492,6 +497,8 @@
 			{
 				source = document.getElementById("src").value;
 				destination = document.getElementById("dest").value;
+
+				makeRoutingTable(source, destination);
 
 				if(validateIPAddress(source) && validateIPAddress(destination))
 				{
@@ -826,10 +833,9 @@
 	        }
 		}	
 
-	    function makeRoutingTable()
+	    function makeRoutingTable(source, destination)
 	    {
-	    	var array = new Array();
-	    	array.push(["Source Network","Destination Network"]);
+	    	var array = ["Destination Network", "Interface"]
 	  		var x = document.createElement("TABLE");
 	  		x.border="1";
 	  		var columnCount = 2;
@@ -838,16 +844,51 @@
 	 		for(var i=0;i<columnCount;i++)
 	 		{
 	 			var headerCell = document.createElement("TH");
-	 			headerCell.innerHTML = array[0][i];
+	 			headerCell.innerHTML = array[i];
 	 			row.appendChild(headerCell);
 	 		}
 
-	 		//get ip1 and ip2 ie the port addresses, substring of each string, add 0's to each and only print that out.
-	 		var n1 = ips[1].substring(0,2) + "0.0.0";
-	 		var n2 = ips[2].substring(0,2) + "0.0.0";
-	 		var ipArray = new Array();
-	 		ipArray.push(n1);
-	 		ipArray.push(n2);
+	 		var mask;
+
+			firstOctetDest = destination.substring(0,destination.indexOf("."));
+			intDest = parseInt(firstOctetDest,10);
+			
+			firstOctetSource = source.substring(0,source.indexOf("."));
+			intSource = parseInt(firstOctetSource,10);
+
+			net1 = getNetwork(intDest, destination);
+			net2 = getNetwork(intSource, source);
+			
+			console.log(net1);
+			console.log(net2);
+
+			function getNetwork(integer, ip)
+			{
+				if(integer>=1 && integer<=126)
+				{
+					mask = "255.0.0.0";
+					network = ip.substring(0, ip.indexOf(".")) +  ".0.0.0";
+					return network;
+				}
+				else if(integer >=128 && integer<=191)
+				{
+					mask = "255.255.0.0";
+					network = ip.substring(0, ip.indexOf(".", ip.indexOf("."))) +  ".0.0";
+					return network;
+				}
+				else if(integer >= 192 && integer <= 223)
+				{
+					mask = "255.255.255.0";
+					network = ip.substring(0, ip.indexOf(".", (ip.indexOf("."), ip.indexOf(".")))) +  ".0";
+					return network;
+				}
+				else
+				{
+					mask = "255.255.255.255";
+					network = ip;
+					return network;
+				}
+			}
 
 	 		for (var i = 0; i < 1; i++)
 	 		{

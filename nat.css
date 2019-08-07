@@ -122,3 +122,8 @@ button:hover {
     width: 99%;
     opacity: 0.9;
 }
+
+input[type=button]:disabled {
+  background: #dddddd;
+  cursor: not-allowed;
+}
