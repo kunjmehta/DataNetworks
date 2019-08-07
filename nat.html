@@ -56,60 +56,35 @@
 	    </nav>
 		</div>
 
-
-		<!-- Algorithm navigation -->
-		<!-- <div id = "nabar">
-	    <ul class="nav nav-tabs nav-justified">
-	        <li class="nav-item">
-	            <a class="nav-link text-dark activea" href="dijkstras.html">Dijkstra's Algo</a>
-	        </li>
-	        <li class="nav-item">
-	            <a class="nav-link text-dark" href="#">Knapsack Problem</a>
-	        </li>
-	    </ul>
-	    </div> -->
-
 		<div>
 			<!-- Algorithm description -->
 		    <div id="left-bar"></div>
 		    <div id="right-bar"></div>
 		    <div id="maintop">
 		        Network address translation (NAT) is a method of remapping one IP address space into another by modifying network address information in the IP header of packets while they are in transit across a traffic routing device. The technique was originally used as a shortcut to avoid the need to readdress every host when a network was moved. It has become a popular and essential tool in conserving global address space in the face of IPv4 address exhaustion. </br>
-		        Note: The simulation supports only classful addressing.
+		        <b>Note: </b> The simulation supports only classful addressing.</br></br>
 					
-				<div style="text-align:left"><table class="bordered" width="68%" summary="This table shows the private IP address ranges for class A, B and C networks" dir="ltr">
-					<caption>Private Address Ranges for class A, B and C networks</caption>
-					<tr>
-<th scope="column" width="13%" align="center" valign="top" style="background-color: ;">Class
-</th>
-<th scope="column" width="61%" align="left" valign="top" style="background-color: ;">Private IP Address Range
-</th>
-<th scope="column" width="26%" align="left" valign="top" style="background-color: ;">Subnet Mask
-</th>
-</tr>
-					<tr>
-						<th scope="row" width="13%" align="center" valign="top">A </th>
-						<td width="61%" align="left" valign="top">10.0.0.0 to 10.255.255.255 </td>
-						<td width="26%" align="left" valign="top">255.0.0.0 </td>
-</td>
-					</tr>
-<tr>
-<th scope="row" width="13%" align="center" valign="top" style="background-color: ;">B
-</th>
-<td width="61%" align="left" valign="top" style="background-color: ;">172.16.0.0 to 172.31.255.255
-</td>
-<td width="26%" align="left" valign="top" style="background-color: ;">255.240.0.0
-</td>
-</tr>
-<tr>
-<th scope="row" width="13%" align="center" valign="top" style="background-color: ;">C
-</th>
-<td width="61%" align="left" valign="top" style="background-color: ;">192.168.0.0 to 192.168.255.255
-</td>
-<td width="26%" align="left" valign="top" style="background-color: ;">255.255.0.0
-</td>
-</tr>
-</table></div>
+				<div style="text-align:center;">
+					<table class="table-bordered" width="68%" summary="This table shows the private IP address ranges for class A, B and C networks">
+						<caption>Private Address Ranges for class A, B and C networks</caption>
+						<tr>
+							<th scope="column" width="13%" align="center" valign="top" style="border-color: black;">Class</th>
+							<th scope="column" width="61%" align="center" valign="top" style="border-color: black;">Private IP Address Range</th>
+						</tr>
+						<tr>
+							<th scope="row" width="13%" align="center" valign="top" style="border-color: black;">A </th>
+							<td width="61%" align="center" valign="top" style="border-color: black;">10.0.0.0 to 10.255.255.255 </td>
+						</tr>
+						<tr>
+							<th scope="row" width="13%" align="center" valign="top" style="border-color: black;">B</th>
+							<td width="61%" align="center" valign="top" style="border-color: black;">172.16.0.0 to 172.31.255.255</td>
+						</tr>
+						<tr>
+							<th scope="row" width="13%" align="center" valign="top" style="border-color: black;">C</th>
+							<td width="61%" align="center" valign="top" style="border-color:black ;">192.168.0.0 to 192.168.255.255</td>
+						</tr>
+					</table>
+				</div>
 		    </div>
 		</div>
 
@@ -122,7 +97,7 @@
 	                        <div class="card-body">
 	                            Add Computer:<br>
 	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP">
-	                            <input type="button" class="addComp" value="Add Computer" onclick="addComputer()">
+	                            <input type="button" class="addComp" value="Add Computer" onclick="addComputer()"  data-toggle="tooltip" title="Give private IP for PC1 and public IP for PC2">
 	                            Add Router: <br>
 	                            <input type="text" class="routerIP1" name="routerIP" placeholder="Router Port 1 IP" data-toggle="tooltip" title="Port 1 and PC 1 should be in same network">
 	                            <input type="text" class="routerIP2" name="routerIP" placeholder="Router Port 2 IP" data-toggle="tooltip" title="Port 2 and PC 2 should be in same network"> 
