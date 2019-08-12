@@ -518,8 +518,8 @@
 							path = firstPaths[0];
 							//createTableForward();
 							//addRowsForward(source, firstDestination[0].split("/")[0].substring(1));
-							curve(X,Y,"black", path);
-    						animation = window.setInterval("animate(\"black\")", 10);
+							curve(X,Y,"blue", path);
+    						animation = window.setInterval(animateSingle, 10, "blue");
 
     						$(".next").on("click", f1);
 						}
@@ -535,6 +535,7 @@
 			// create key with selected routers and destination
 			function secondSim()
 			{
+				console.log("Inside second sim");
 				flag = true;
 				for (var i = 0; i < routerDestination.length; i++) 
 				{
@@ -567,8 +568,8 @@
 
 				path = secondPaths[0];
 				//addRowsForward(firstDestination[0].split("/")[1], destination);
-				curve(X,Y,"black", path);
-    			animation = window.setInterval("animate()", 10);
+				curve(X,Y,"blue", path);
+    			animation = window.setInterval(animateSingle, 10, "blue");
 
     			$(".next").off("click", f1).on("click", f2);
 			}
@@ -576,15 +577,17 @@
 			// THIRD STEP
 			function thirdSim()
 			{
+				console.log("Inside third sim");
 				flag = true;
 	 			thirdPathArray = secondPaths[0].split(",");
 				thirdPath = reversePath(thirdPathArray).toString();
 
 				path = thirdPath;
+				console.log(path);
 				//createTableBackward();
 				//addRowsBackward(destination, firstDestination[0].split("/")[1]);
-				curve(X,Y,"red", path);
-    			animation = window.setInterval("animate()", 10);
+				curve(X,Y,"green", path);
+    			animation = window.setInterval(animateSingle, 10, "green");
 
     			$(".next").off("click", f2).on("click", f3);
 			}
@@ -592,6 +595,7 @@
 			// FOURTH STEP 
 			function fourthSim()
 			{	
+				console.log("Inside fourth sim");
 				flag = true;
 				fourthPathArray = firstPaths[0].split(",");
 				fourthPath = reversePath(fourthPathArray).toString();
@@ -599,10 +603,59 @@
 				path = fourthPath;
 				//addRowsBackward(firstDestination[0].split("/")[0].substring(1), source);
 				curve(X,Y,"green", path);
-    			animation = window.setInterval("animate()", 10);
+    			animation = window.setInterval(animateSingle, 10, "green");
 
     			$(".next").off("click", f3).on("click", f4);
 			}
+
+			function fifthSim()
+			{	
+				flag = true;
+
+				path = firstPaths[0];
+				//addRowsBackward(firstDestination[0].split("/")[0].substring(1), source);
+				curve(X,Y,"black", path);
+    			animation = window.setInterval(animate, 10, "black");
+
+    			$(".next").off("click", f4).on("click", f5);
+			}
+
+			function sixthSim()
+			{	
+				flag = true;
+
+				path = secondPaths[0];
+				//addRowsBackward(firstDestination[0].split("/")[0].substring(1), source);
+				curve(X,Y,"black", path);
+    			animation = window.setInterval(animate, 10,"black");
+
+    			$(".next").off("click", f5).on("click", f6);
+			}
+
+			function seventhSim()
+			{	
+				flag = true;
+
+				path = thirdPath;
+				//addRowsBackward(firstDestination[0].split("/")[0].substring(1), source);
+				curve(X,Y,"black", path);
+    			animation = window.setInterval(animate, 10,"black");
+
+    			$(".next").off("click", f6).on("click", f7);
+			}
+
+			function eighthSim()
+			{	
+				flag = true;
+
+				path = fourthPath;
+				//addRowsBackward(firstDestination[0].split("/")[0].substring(1), source);
+				curve(X,Y,"black", path);
+    			animation = window.setInterval(animate, 10,"black");
+
+    			$(".next").off("click", f7).on("click", f8);
+			}
+
 
 			function f1()
 			{
@@ -625,7 +678,31 @@
 			function f4()
 			{
 				flag = false;
-				alert("Animation complete");
+				setTimeout(fifthSim, 5000);
+			}
+
+			function f5()
+			{
+				flag = false;
+    			setTimeout(sixthSim, 5000);
+			}
+
+			function f6()
+			{
+				flag = false;
+    			setTimeout(seventhSim, 5000);
+			}
+
+			function f7()
+			{
+				flag = false;
+    			setTimeout(eighthSim, 5000);
+			}
+
+			function f8()
+			{
+				flag = false;
+    			alert("Animation complete");
 			}
 		};
 
@@ -638,7 +715,7 @@
 
 		function curve(x, y, colour, path)
 		{
-
+			counter = 0;
 		    h = paper.circle(x, y, 5, 5).attr(
 		    {
 		        stroke: "none",
@@ -657,7 +734,7 @@
 		    });
 		}
 
-		function animate(color)
+		function animate(colour)
 		{
 			animationPaths = document.getElementsByTagName("path");
 		    
@@ -669,15 +746,35 @@
 		        // remove the duplicated animation path
 		        animationPaths[animationPaths.length - 1].remove();
 		        
-		        // set initial conditions to repeat animation again if flag is true
+		        //set initial conditions to repeat animation again if flag is true
 		        if(flag)
 		        {
 		        	counter = 0;
-		        	curve(X,Y,color, path);
-    				animation = window.setInterval("animate(\"color\")", 10);
+		        	curve(X,Y,colour, path);
+    				animation = window.setInterval(animate, 10, colour);
     			}
     			else
 		        	return;
+		    }
+
+		    var pos = myPath.getPointAtLength(counter);   //get the position (see Raphael docs)
+		    h.attr({cx: pos.x, cy: pos.y});  //set the circle position
+		   
+		    counter++; // count the step counter one up
+		};
+
+		function animateSingle(color)
+		{
+			animationPaths = document.getElementsByTagName("path");
+		    
+		    //break as soon as the total length is reached
+		    if(myPath.getTotalLength() <= counter)
+		    {  
+		        $("circle").remove();
+		        // remove the duplicated animation path
+		        animationPaths[animationPaths.length - 1].remove();
+		       	clearInterval(animation);
+		        return;
 		    }
 
 		    var pos = myPath.getPointAtLength(counter);   //get the position (see Raphael docs)
