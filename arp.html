@@ -63,7 +63,7 @@
 		    <div id="maintop">
 		    	ARP (Address Resolution Protocol) is a network protocol used to find out the hardware (MAC) address of a device from an IP address. It is used when a device wants to communicate with some other device on a local network (for example on an Ethernet network that requires physical addresses to be known before sending packets). The sending device uses ARP to translate IP addresses to MAC addresses. The device sends an ARP request message containing the IP address of the receiving device.</br> All devices on a local network segment see the message, but only the device that has that IP address responds with the ARP reply message containing its MAC address. The sending device now has enough information to send the packet to the receiving device.
 		       	<div style="text-align:center;">
-					<table class="table-bordered" width="40%">
+					<table class="table-bordered" width="30%">
 						<caption></caption>
 						<tr>
 							<th scope="column" width="30%" align="center" valign="top" style="border-color: black;">Packets</th>
@@ -124,7 +124,9 @@
  	                        <div class="col-sm-6">
 	                            <div id="ipTable"></div>
 	                            <div id="reqTable"></div>
+	                            <div id="dataReq"></div>
 	                            <div id="resTable"></div>
+	                            <div id="dataResp"></div>
 	                        </div>
 	                    </div>
 	                    <div id="srcout"></div>
@@ -507,11 +509,13 @@
 			destination = document.getElementById("dest").value;
 			//function call to create the Request Packet as soon as simulation begins
 			createReqTable(source,destination);
+			
 
 			firstSim();
 
 			function firstSim()
-			{
+			{	
+				dataReq();
 
 				//makeRoutingTable(source, destination);
 
@@ -606,6 +610,7 @@
 
 				//function call to create a response packet table
 				createRespTable(source,destination);
+				dataRes();
 
 				flag = true;
 	 			thirdPathArray = secondPaths[0].split(",");
@@ -1008,7 +1013,8 @@
        		{
        			if(ipMacMapKeys[i]==dest)
        			{
-       				desMac = ipMacMap[ipMacMapKeys[i]]; 
+       				desMac = ipMacMap[ipMacMapKeys[i]];
+       				console.log(desMac); 
        			}
        		}
 
@@ -1024,7 +1030,10 @@
   			var cell2 = row0.insertCell(1);
   			cell1.innerHTML = "Source IP";
   			cell2.innerHTML = "Destination IP";
-
+  			//swapping source and destination IP values
+  			var temp=src;
+  			src=dest;
+  			dest=temp;
   			row1 = z.insertRow(1);
   			var cell2 = row1.insertCell(0);
   			var cell3 = row1.insertCell(1);
@@ -1042,7 +1051,10 @@
   			var cell7 = row3.insertCell(1);
   			cell6.innerHTML = "Source MAC";
   			cell7.innerHTML = "Destination MAC";
-
+  			//swapping source and destination MAC values
+  			var temp1=mac;
+  			mac=desMac;
+  			desMac=temp1;
   			row4 = z.insertRow(4);
   			var cell8 = row4.insertCell(0);
   			var cell9 = row4.insertCell(1);
@@ -1055,6 +1067,48 @@
 	        ftable.innerHTML = "<i>Response Packet </i></br></br>";
 	        ftable.appendChild(z);
 
+       	}
+
+       	//function to make a data encapsulated request packet with two fields, src mac and destination mac with all 1's
+       	var p =document.createElement("TABLE");
+       	function dataReq(){
+       		//two fields, src and des MAC with all 1's
+       		p.border='1';
+       		var row0=p.insertRow(0);
+       		var row1=p.insertRow(1);
+  			var cell1 = row0.insertCell(0);
+  			var cell2 = row0.insertCell(1);
+  			cell1.innerHTML = "Source MAC";
+  			cell2.innerHTML = "Destination MAC";
+  			var cell2 = row1.insertCell(0);
+  			var cell3 = row1.insertCell(1);
+  			cell2.innerHTML = mac;
+  			cell3.innerHTML = "11:11:11:11:11:11";
+
+       		var ftable = document.getElementById("dataReq");
+	        ftable.innerHTML = "<i>DLL Request Packet </i></br></br>";
+	        ftable.appendChild(p);
+       	}
+
+       	var q=document.createElement("TABLE");
+       	function dataRes(){
+       		//twp fields, src and MAC with actual destination mac address
+       		q.border='1';
+       		var row0=q.insertRow(0);
+       		var row1=q.insertRow(1);
+  			var cell1 = row0.insertCell(0);
+  			var cell2 = row0.insertCell(1);
+  			cell1.innerHTML = "Source MAC";
+  			cell2.innerHTML = "Destination MAC";
+  			var cell2 = row1.insertCell(0);
+  			var cell3 = row1.insertCell(1);
+  			cell2.innerHTML = mac;
+  			cell3.innerHTML = desMac;       		
+
+
+       		var ftable = document.getElementById("dataResp");
+	        ftable.innerHTML = "<i>DLL Response Packet </i></br></br>";
+	        ftable.appendChild(q);
        	}
 
 	  //   function makeRoutingTable(source, destination)
