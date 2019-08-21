@@ -109,25 +109,22 @@
 	                            <input type="button" class="clear" value="Clear" onclick="clearCanvas()">
 	                        	</br>
 	                        	</br>
-
-<!-- 	                            <div class="col-sm-12">
-									<div id="table1"></div>
-								</div> -->
-	                        </div>
-	                    </div>
-	                </div>
-	                <div class="col-sm-8">
-	                    <div class="row">
-	                        <div class="col-sm-6">
-	                            <div id="simulation"></div>
-	                        </div>
- 	                        <div class="col-sm-6">
+								<div class="col-sm-6">
 	                            <div id="ipTable"></div>
 	                            <div id="reqTable"></div>
 	                            <div id="dataReq"></div>
 	                            <div id="resTable"></div>
 	                            <div id="dataResp"></div>
+		                        </div>
+		                    </div>
+		                </div>
+		            </div>
+	                <div class="col-sm-8">
+	                    <div class="row">
+	                        <div class="col-sm-6">
+	                            <div id="simulation"></div>
 	                        </div>
+ 	                        
 	                    </div>
 	                    <div id="srcout"></div>
 	                    <div class="w3-container" id="canvas">
@@ -569,6 +566,7 @@
 			// create key with selected routers and destination
 			function secondSim()
 			{
+				alert("Broadcast starting");
 				console.log("Inside second sim");
 				flag = true;
 				for (var i = 0; i < routerDestination.length; i++) 
@@ -630,7 +628,6 @@
 	    			animation = window.setInterval(animateSingle, 10, "blue");
 	    		}
 
-	    		setTimeout(function(){alert("Broadcast starting")}, 3000);
 	    		setTimeout(broadcastSim, 3000, broadcastPaths[0]);
 	    		setTimeout(broadcastSim, 9000, broadcastPaths[1]);
 	    		setTimeout(broadcastSim, 14000, broadcastPaths[2]);
@@ -691,7 +688,7 @@
 				flag = true;
 
 				path = firstPaths[0];
-				addRows(source, firstDestination[0].split("/")[0].substring(1));
+				addRows(source, "Hub");
 				curve(X,Y,"black", path);
     			animation = window.setInterval(animate, 10, "black");
 
@@ -705,7 +702,7 @@
 				flag = true;
 
 				path = secondPaths[0];
-				addRows(firstDestination[0].split("/")[0].substring(1), destination);
+				addRows("Hub", destination);
 				curve(X,Y,"black", path);
     			animation = window.setInterval(animate, 10,"black");
 
@@ -717,7 +714,7 @@
 				flag = true;
 
 				path = thirdPath;
-				addRows(destination, firstDestination[0].split("/")[0].substring(1));
+				addRows(destination, "Hub");
 				curve(X,Y,"black", path);
     			animation = window.setInterval(animate, 10,"black");
 
@@ -729,7 +726,7 @@
 				flag = true;
 
 				path = fourthPath;
-				addRows(firstDestination[0].split("/")[0].substring(1), source);
+				addRows("Hub", source);
 				curve(X,Y,"black", path);
     			animation = window.setInterval(animate, 10,"black");
 
@@ -951,23 +948,19 @@
 		function createIP()
 		{
 			var array = ["Source IP","Destination IP"];
-
   			x.border="1";
   			var columnCount = 2; 
  			var row = x.insertRow(-1);
-
  			for(var i=0;i<columnCount;i++)
  			{
  				var headerCell = document.createElement("TH");
  				headerCell.innerHTML = array[i];
  				row.appendChild(headerCell);
  			}
-
 	        var ftable = document.getElementById("ipTable");
 	        ftable.innerHTML = "<i>IP Table </i></br></br>";
 	        ftable.appendChild(x);
 		}
-
 		function addRows(src, dest)
     	{
     		arr = [src, dest];
@@ -979,10 +972,7 @@
 	            cell.innerHTML = arr[j];
 	        }
        	}
-
-
        	var mac;
-
        	//function to create a Request Packet Table
        	var y= document.createElement("TABLE");
        	function createReqTable(src,dest)
@@ -996,9 +986,6 @@
        				mac = ipMacMap[ipMacMapKeys[i]]; 
        			}
        		}
-
-
-
        		y.border='1';
        		var row0=y.insertRow(0);
        		var row1=y.insertRow(1);
@@ -1011,45 +998,36 @@
   			var cell2 = row0.insertCell(1);
   			cell1.innerHTML = "Source IP";
   			cell2.innerHTML = "Destination IP";
-
   			row1 = y.insertRow(1);
   			var cell2 = row1.insertCell(0);
   			var cell3 = row1.insertCell(1);
   			cell2.innerHTML = src;
   			cell3.innerHTML = dest;
-
   			row2=y.insertRow(2);
   			var cell4 = row2.insertCell(0);
   			var cell5 = row2.insertCell(1);
   			cell4.innerHTML = "Packet Type";
   			cell5.innerHTML = 0;
-
   			row3 = y.insertRow(3);
   			var cell6 = row3.insertCell(0);
   			var cell7 = row3.insertCell(1);
   			cell6.innerHTML = "Source MAC";
   			cell7.innerHTML = "Destination MAC";
-
   			row4 = y.insertRow(4);
   			var cell8 = row4.insertCell(0);
   			var cell9 = row4.insertCell(1);
   			cell8.innerHTML = mac;
-  			cell9.innerHTML = "00:00:00:00:00:00";
-
-
+  			cell9.innerHTML = "<b> 00:00:00:00:00:00 </b>";
 
        		var ftable = document.getElementById("reqTable");
-	        ftable.innerHTML = "<i>Request Packet </i></br></br>";
+	        ftable.innerHTML = "<br><b>Request Packet </b>";
 	        ftable.appendChild(y);
-
        	}
-
        	//Function to create a Response Packet Table
        	var desMac;
        	var z= document.createElement("TABLE");
        	function createRespTable(src,dest)
        	{
-
        		var ipMacMapKeys = Object.keys(ipMacMap);
        		console.log(ipMacMapKeys);
        		for(var i=0;i<ipMacMapKeys.length;i++)
@@ -1060,7 +1038,6 @@
        				console.log(desMac); 
        			}
        		}
-
        		z.border='1';
        		var row0=z.insertRow(0);
        		var row1=z.insertRow(1);
@@ -1082,13 +1059,11 @@
   			var cell3 = row1.insertCell(1);
   			cell2.innerHTML = src;
   			cell3.innerHTML = dest;
-
   			row2=z.insertRow(2);
   			var cell4 = row2.insertCell(0);
   			var cell5 = row2.insertCell(1);
   			cell4.innerHTML = "Packet Type";
   			cell5.innerHTML = 1;
-
   			row3 = z.insertRow(3);
   			var cell6 = row3.insertCell(0);
   			var cell7 = row3.insertCell(1);
@@ -1104,14 +1079,10 @@
   			cell8.innerHTML = mac;
   			cell9.innerHTML = desMac;
 
-
-
        		var ftable = document.getElementById("resTable");
-	        ftable.innerHTML = "<i>Response Packet </i></br></br>";
+	        ftable.innerHTML = "<br><b>Response Packet </b>";
 	        ftable.appendChild(z);
-
        	}
-
        	//function to make a data encapsulated request packet with two fields, src mac and destination mac with all 1's
        	var p =document.createElement("TABLE");
        	function dataReq(){
@@ -1125,14 +1096,16 @@
   			cell2.innerHTML = "Destination MAC";
   			var cell2 = row1.insertCell(0);
   			var cell3 = row1.insertCell(1);
+  			var cell4 = row1.insertCell(2);
+
   			cell2.innerHTML = mac;
   			cell3.innerHTML = "11:11:11:11:11:11";
+  			cell4.innerHTML = "ARP Request Packet";
 
        		var ftable = document.getElementById("dataReq");
-	        ftable.innerHTML = "<i>DLL Request Packet </i></br></br>";
+	        ftable.innerHTML = "<br><b>DLL Request Packet </b>";
 	        ftable.appendChild(p);
        	}
-
        	var q=document.createElement("TABLE");
        	function dataRes(){
        		//twp fields, src and MAC with actual destination mac address
@@ -1145,94 +1118,13 @@
   			cell2.innerHTML = "Destination MAC";
   			var cell2 = row1.insertCell(0);
   			var cell3 = row1.insertCell(1);
+  			var cell4 = row1.insertCell(2);
   			cell2.innerHTML = mac;
-  			cell3.innerHTML = desMac;       		
-
-
+  			cell3.innerHTML = desMac;      
+  			cell4.innerHTML = "ARP Response Packet"; 		
        		var ftable = document.getElementById("dataResp");
-	        ftable.innerHTML = "<i>DLL Response Packet </i></br></br>";
+	        ftable.innerHTML = "<br><b>DLL Response Packet</b>";
 	        ftable.appendChild(q);
        	}
-
-	  //   function makeRoutingTable(source, destination)
-	  //   {
-	  //   	var array = ["Destination Network", "Interface"]
-	  // 		var x = document.createElement("TABLE");
-	  // 		x.border="1";
-	  // 		var columnCount = 2;
-	 	// 	var row = x.insertRow(-1);
-	 		
-	 	// 	for(var i=0;i<columnCount;i++)
-	 	// 	{
-	 	// 		var headerCell = document.createElement("TH");
-	 	// 		headerCell.innerHTML = array[i];
-	 	// 		row.appendChild(headerCell);
-	 	// 	}
-
-	 	// 	var mask;
-
-			// firstOctetDest = destination.substring(0,destination.indexOf("."));
-			// intDest = parseInt(firstOctetDest,10);
-			
-			// firstOctetSource = source.substring(0,source.indexOf("."));
-			// intSource = parseInt(firstOctetSource,10);
-
-			// net1 = getNetwork(intDest, destination);
-			// net2 = getNetwork(intSource, source);
-			
-			// console.log(net1);
-			// console.log(net2);
-
-			// function getNetwork(integer, ip)
-			// {
-			// 	if(integer>=1 && integer<=126)
-			// 	{
-			// 		mask = "255.0.0.0";
-			// 		network = ip.substring(0, ip.indexOf(".")) +  ".0.0.0";
-			// 		return network;
-			// 	}
-			// 	else if(integer >=128 && integer<=191)
-			// 	{
-			// 		mask = "255.255.0.0";
-			// 		ipArray = ip.split(".");
-			// 		network = ipArray[0] + "." + ipArray[1] + ".0.0";
-			// 		return network;
-			// 	}
-			// 	else if(integer >= 192 && integer <= 223)
-			// 	{
-			// 		mask = "255.255.255.0";
-			// 		ipArray = ip.split(".");
-			// 		network = ipArray[0] + "." + ipArray[1] + "." + ipArray[2] + ".0";
-			// 		return network;
-			// 	}
-			// 	else
-			// 	{
-			// 		mask = "255.255.255.255";
-			// 		network = ip;
-			// 		return network;
-			// 	}
-			// }
-
-	  //       tableArray1 = [net1, "Port2"];
-			// tableArray2 = [net2, "Port1"];
-			
-			// row = x.insertRow(-1);	
-	  //       for (var j = 0; j < columnCount; j++)
-	  //       {
-	  //               var cell = row.insertCell(-1);
-	  //               cell.innerHTML = tableArray1[j];
-	  //       }
-			
-			// row = x.insertRow(-1);	
-	  //       for (var j = 0; j < columnCount; j++)
-	  //       {
-	  //               var cell = row.insertCell(-1);
-	  //               cell.innerHTML = tableArray2[j];
-	  //       }
-
-	  //       var table = document.getElementById("table1");
-	  //       table.innerHTML = "<i>Routing Table<i></br>";
-	  //       table.appendChild(x);	
-	  //   };
 		</script>
 </html>
