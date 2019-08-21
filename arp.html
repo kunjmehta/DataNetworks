@@ -71,7 +71,7 @@
 						</tr>
 						<tr>
 							<th scope="row" width="30%" align="center" valign="top" style="border-color: black;">Request packet</th>
-							<td width="30%" align="center" valign="top" style="border-color: black;"> Black </td>
+							<td width="30%" align="center" valign="top" style="border-color: black;"> Blue </td>
 						</tr>
 						<tr>
 							<th scope="row" width="30%" align="center" valign="top" style="border-color: black;">Response Packet</th>
@@ -79,7 +79,7 @@
 						</tr>
 						<tr>
 							<th scope="row" width="30%" align="center" valign="top" style="border-color: black;">IP packet</th>
-							<td width="30%" align="center" valign="top" style="border-color:black ;">Blue</td>
+							<td width="30%" align="center" valign="top" style="border-color:black ;">Black</td>
 						</tr>
 					</table>
 				</div>
@@ -95,12 +95,12 @@
 	                        <div class="card-header cardtitle">Canvas Editor</div>
 	                        <div class="card-body">
 	                            Add Computer:<br>
-	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP">
-	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP">
-	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP">
-	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP">
-	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP">
-	                            <input type="button" class="addComp" value="Add Computer" onclick="addComputer()"  data-toggle="tooltip" title="Let the addresses of the 5 PCs be of the same network">
+	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP 1" data-toggle="tooltip" title="This is the source IP">
+	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP 2">
+	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP 3">
+	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP 4">
+	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP 5">
+	                            <input type="button" class="addComp" value="Add Computer" onclick="addComputer()"  data-toggle="tooltip" title="The addresses of the PCs should be in same network">
 
 	                            <input type="button" class="addHub" disabled value="Add Hub" data-toggle="tooltip" title="Click to add hub" onclick="addHub()">
 
@@ -505,6 +505,10 @@
 			thirdPath = "";
 			fourthPath = "";
 
+
+			keysBCDestination = [];
+			broadcastPaths = [];
+
 			source = document.getElementById("src").value;
 			destination = document.getElementById("dest").value;
 			//function call to create the Request Packet as soon as simulation begins
@@ -516,6 +520,7 @@
 			function firstSim()
 			{	
 				dataReq();
+				console.log(ipConnectionMap);
 
 				//makeRoutingTable(source, destination);
 
@@ -571,7 +576,7 @@
 					if(ipConnectionMap[routerDestination[i]].length > 1)
 					{
 						right = ipConnectionMap[routerDestination[i]];
-						for (var j = 0; i < right.length; j++) 
+						for (var j = 0; j < right.length; j++) 
 						{
 							if(right[j] == "C"+destination)
 							{
@@ -595,12 +600,50 @@
 					secondPaths.push(ipConnPathMap[keysSecondDestination[i]]);
 				}
 
-				path = secondPaths[0];
-				//addRowsForward(firstDestination[0].split("/")[1], destination);
-				curve(X,Y,"blue", path);
-    			animation = window.setInterval(animateSingle, 10, "blue");
+				console.log(secondPaths);
+
+				broadcastDestination = ipConnectionMap[routerDestination[0]];
+				console.log(broadcastDestination);
+				for (var j = 0; j < broadcastDestination.length; j++) 
+				{
+					if(broadcastDestination[j] != "C"+destination)
+					{
+						keysBCDestination.push(routerDestination[0] + " " + broadcastDestination[j]);
+					}
+				}
+
+				console.log(keysBCDestination);
+
+				for (var i = 0; i < keysBCDestination.length; i++) 
+				{
+					broadcastPaths.push(ipConnPathMap[keysBCDestination[i]]);
+				}
+
+				console.log(broadcastPaths);
+
+
+				for(i=0;i<secondPaths.length;i++)
+				{	
+					path = secondPaths[i];
+					//addRowsForward(firstDestination[0].split("/")[1], destination);
+					curve(X,Y,"blue", path);
+	    			animation = window.setInterval(animateSingle, 10, "blue");
+	    		}
+
+	    		setTimeout(function(){alert("Broadcast starting")}, 3000);
+	    		setTimeout(broadcastSim, 3000, broadcastPaths[0]);
+	    		setTimeout(broadcastSim, 9000, broadcastPaths[1]);
+	    		setTimeout(broadcastSim, 14000, broadcastPaths[2]);
+	    		setTimeout(function(){alert("Broadcast complete. Please click next")}, 16000);
 
     			$(".next").off("click", f1).on("click", f2);
+			}
+
+			function broadcastSim(path)
+			{
+					//addRowsForward(firstDestination[0].split("/")[1], destination);
+					curve(X,Y,"blue", path);
+	    			animation = window.setInterval(animateSingle, 10, "blue");
 			}
 
 			// THIRD STEP
