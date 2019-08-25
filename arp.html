@@ -44,7 +44,7 @@
 	            <a class="nav-link" href="index.html">Data Networks</a>
 	            </li>
 	            <li class="nav-item">
-	            <a class="nav-link" href="#">Introduction</a>
+	            <a class="nav-link" href="intro.html">Introduction</a>
 	            </li>
 	            <li class="nav-item">
 	            <a class="nav-link" href="nat.html">Network Address Translation</a>
@@ -327,6 +327,7 @@
 			connections.push(paper.connection(shapes[indexes[0]], shapes[indexes[1]], "#000"));
 		}
 
+		var checkFlag = false;
 		// Add computers
 		function addComputer() 
 		{ 
@@ -338,7 +339,7 @@
 			{
 				ipaddr.push(ip[i].value);
 			}
-			console.log(ipaddr);
+			
 
 			for(var i=0;i<ipaddr.length;i++)
 			{
@@ -364,9 +365,8 @@
 			
 			if(ips.length===5)
 			{
-				//console.log("In else if condition");
-				console.log(ips);
-				if(checkSameNetwork(ipaddr))
+				
+				if(checkSameNetwork(ipaddr) && checkFlag==false)
 				{
 					$(".addComp").attr("disabled" , true);
 					$(".addHub").removeAttr("disabled");
@@ -394,9 +394,12 @@
 			$(".addHub").attr("disabled" , true);
 		}
 
+		
 		// Clear canvas
 		function clearCanvas()
-		{
+		{	
+			checkFlag=true;
+			$(".addComp").removeAttr("disabled");
 			var div = document.getElementById("canvas");
 		    while(div.firstChild)
 		    {
@@ -414,6 +417,20 @@
 			ipConnectionMap = {};
 			ipConnPathMap = {};
 			ipConnPathMapKey = [];
+
+			var Table1 = document.getElementById("resTable");
+			Table1.innerHTML = "";
+			var Table2 = document.getElementById("dataReq");
+			Table2.innerHTML = "";
+			var Table3 = document.getElementById("dataResp");
+			Table3.innerHTML = "";
+			var Table4 = document.getElementById("reqTable");
+			Table4.innerHTML = "";
+			var Table5 = document.getElementById("ipTable");
+			Table5.innerHTML = "";
+
+			checkFlag=false;
+
 		}
 
 		// Get simulation start info 
@@ -478,7 +495,7 @@
 			{
 				ipMacMap[ips[i]] = globalMacArr[i]; 
 			}
-			console.log(ipMacMap);
+			
 		}	
 
 		
@@ -515,17 +532,24 @@
 
 			source = document.getElementById("src").value;
 			destination = document.getElementById("dest").value;
-			//function call to create the Request Packet as soon as simulation begins
-			createReqTable(source,destination);
-			
 
-			firstSim();
+			
+			if(getARPDest(destination)){
+			//function call to create the Request Packet as soon as simulation begins
+				createReqTable(source,destination);
+				firstSim();
+			}
+			else{
+				alert("IP address already found.");
+				$("#startsim").removeAttr("disabled");
+				$(".next").attr("disabled" , true);
+
+			}
 
 			function firstSim()
 			{	
 				dataReq();
-				console.log(ipConnectionMap);
-
+				
 				//makeRoutingTable(source, destination);
 
 				if(validateIPAddress(source) && validateIPAddress(destination))
@@ -574,7 +598,7 @@
 			function secondSim()
 			{
 				alert("Broadcast starting");
-				console.log("Inside second sim");
+				
 				flag = true;
 				for (var i = 0; i < routerDestination.length; i++) 
 				{
@@ -605,10 +629,10 @@
 					secondPaths.push(ipConnPathMap[keysSecondDestination[i]]);
 				}
 
-				console.log(secondPaths);
+				
 
 				broadcastDestination = ipConnectionMap[routerDestination[0]];
-				console.log(broadcastDestination);
+				
 				for (var j = 0; j < broadcastDestination.length; j++) 
 				{
 					if(broadcastDestination[j] != "C"+destination)
@@ -617,14 +641,14 @@
 					}
 				}
 
-				console.log(keysBCDestination);
+				
 
 				for (var i = 0; i < keysBCDestination.length; i++) 
 				{
 					broadcastPaths.push(ipConnPathMap[keysBCDestination[i]]);
 				}
 
-				console.log(broadcastPaths);
+				
 
 
 				for(i=0;i<secondPaths.length;i++)
@@ -653,7 +677,7 @@
 			// THIRD STEP
 			function thirdSim()
 			{
-				console.log("Inside third sim");
+				
 
 				//function call to create a response packet table
 				createRespTable(source,destination);
@@ -664,7 +688,7 @@
 				thirdPath = reversePath(thirdPathArray).toString();
 
 				path = thirdPath;
-				console.log(path);
+				
 				//createTableBackward();
 				//addRowsBackward(destination, firstDestination[0].split("/")[1]);
 				curve(X,Y,"green", path);
@@ -676,7 +700,7 @@
 			// FOURTH STEP 
 			function fourthSim()
 			{	
-				console.log("Inside fourth sim");
+				
 				flag = true;
 				fourthPathArray = firstPaths[0].split(",");
 				fourthPath = reversePath(fourthPathArray).toString();
@@ -986,7 +1010,7 @@
        	function createReqTable(src,dest)
        	{
        		var ipMacMapKeys = Object.keys(ipMacMap);
-       		console.log(ipMacMapKeys);
+       		
        		for(var i=0;i<ipMacMapKeys.length;i++)
        		{
        			if(ipMacMapKeys[i]==src)
@@ -1015,7 +1039,7 @@
   			var cell4 = row2.insertCell(0);
   			var cell5 = row2.insertCell(1);
   			cell4.innerHTML = "Packet Type";
-  			cell5.innerHTML = 0;
+  			cell5.innerHTML = 1;
   			row3 = y.insertRow(3);
   			var cell6 = row3.insertCell(0);
   			var cell7 = row3.insertCell(1);
@@ -1037,13 +1061,13 @@
        	function createRespTable(src,dest)
        	{
        		var ipMacMapKeys = Object.keys(ipMacMap);
-       		console.log(ipMacMapKeys);
+       		
        		for(var i=0;i<ipMacMapKeys.length;i++)
        		{
        			if(ipMacMapKeys[i]==dest)
        			{
        				desMac = ipMacMap[ipMacMapKeys[i]];
-       				console.log(desMac); 
+       				 
        			}
        		}
        		z.border='1';
@@ -1071,7 +1095,7 @@
   			var cell4 = row2.insertCell(0);
   			var cell5 = row2.insertCell(1);
   			cell4.innerHTML = "Packet Type";
-  			cell5.innerHTML = 1;
+  			cell5.innerHTML = 2;
   			row3 = z.insertRow(3);
   			var cell6 = row3.insertCell(0);
   			var cell7 = row3.insertCell(1);
@@ -1138,7 +1162,20 @@
        	function addARPRows(dest, mac)
        	{
        		var arp = $("#arpTable");
-		    arp.append("<tr><td>"+ dest + "</td><td>"+ mac +"</td></tr>");
+		    arp.append("<tr><td class=\"dest1\">"+ dest + "</td><td>"+ mac +"</td></tr>");
+       	}
+
+       	var arr = [];
+       	//function to get ARP destination
+       	function getARPDest(destination){
+       		
+       		var arr1 = $(".dest1").text();
+       		if(arr1.includes(destination)){
+       			
+       			return false;
+       		}
+       		else
+       			return true;
        	}
 		</script>
 </html>
