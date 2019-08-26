@@ -83,10 +83,11 @@
 						</tr>
 					</table>
 
-					<table class="table-bordered" width="30%" id = "arpTable" align="right">
+					<table class="table-bordered" width="30%" id = "arpTable" align="right" style="text-align: center; margin-right: 40px">
+						<caption>ARP table for PC 1</caption>
 						<tr>
-							<th>IP Address</th>
-							<th>MAC Address</th>
+							<th style="border-color: black;">IP Address</th>
+							<th style="border-color: black;">MAC Address</th>
 						</tr>
 					</table>
 				</div>
@@ -102,7 +103,7 @@
 	                        <div class="card-header cardtitle">Canvas Editor</div>
 	                        <div class="card-body">
 	                            Add Computer:<br>
-	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP 1" data-toggle="tooltip" title="This is the source IP">
+	                            <input type="text" class="computerIP scompIP" name="computerIP" placeholder="Computer IP 1" data-toggle="tooltip" title="This is the source IP">
 	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP 2">
 	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP 3">
 	                            <input type="text" class="computerIP" name="computerIP" placeholder="Computer IP 4">
@@ -328,12 +329,12 @@
 		}
 
 		var checkFlag = false;
+		ipaddr = [];
 		// Add computers
 		function addComputer() 
 		{ 
 			var position = 170;
 			// Get IP address
-			ipaddr = [];
 			var ip = document.getElementsByClassName("computerIP");
 			for(var i=0;i<ip.length;i++)
 			{
@@ -417,17 +418,13 @@
 			ipConnectionMap = {};
 			ipConnPathMap = {};
 			ipConnPathMapKey = [];
+			ipaddr.length = 0;
 
-			var Table1 = document.getElementById("resTable");
-			Table1.innerHTML = "";
-			var Table2 = document.getElementById("dataReq");
-			Table2.innerHTML = "";
-			var Table3 = document.getElementById("dataResp");
-			Table3.innerHTML = "";
-			var Table4 = document.getElementById("reqTable");
-			Table4.innerHTML = "";
-			var Table5 = document.getElementById("ipTable");
-			Table5.innerHTML = "";
+			$("#resTable tr").remove();
+			$("#dataReq tr").remove();
+			$("#dataResp tr").remove();
+			$("#reqTable tr").remove();
+			$("#ipTable tr").remove();
 
 			checkFlag=false;
 
@@ -439,9 +436,7 @@
 		    var sim = document.getElementById("simulation");
 		    sim.innerHTML = '';
 		    sim.innerHTML += 'Enter source IP: </br>';
-		    sim.innerHTML += '<input type="text" id="src" placeholder="Source IP"></br>';
-		    // sim.innerHTML += 'Enter source MAC address: </br>';
-		    // sim.innerHTML += '<input type="text" id="srcMac" placeholder="Source MAC"></br>';
+		    sim.innerHTML += '<input type="text" disabled id="src" placeholder="Source IP" value=' + ipaddr[0] + '></br>';
 		    sim.innerHTML += 'Enter destination IP : </br>';
 		    sim.innerHTML += '<input type="text" id="dest" placeholder="Destination IP"></br>';
 		    sim.innerHTML += '<input type="button" id="startsim" value="Start Simulation" onclick="simulate();"> </br>';
@@ -538,12 +533,13 @@
 			//function call to create the Request Packet as soon as simulation begins
 				createReqTable(source,destination);
 				firstSim();
+				$(".next").removeAttr("disabled");
+				$(".scompIP").attr("disabled", true);
 			}
 			else{
 				alert("IP address already found.");
 				$("#startsim").removeAttr("disabled");
 				$(".next").attr("disabled" , true);
-
 			}
 
 			function firstSim()
@@ -1162,7 +1158,7 @@
        	function addARPRows(dest, mac)
        	{
        		var arp = $("#arpTable");
-		    arp.append("<tr><td class=\"dest1\">"+ dest + "</td><td>"+ mac +"</td></tr>");
+		    arp.append("<tr><td class=\"dest1\" style= \"border-color:black\">"+ dest + "</td><td  style= \"border-color:black\">"+ mac +"</td></tr>");
        	}
 
        	var arr = [];
